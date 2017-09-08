@@ -13,17 +13,17 @@ namespace Schedulr
         static void Main(string[] args)
         {
             // We serve static files, such as index.html from the 'public' directory
-            var server = new RedHttpServer(5000, "public");
+            var server = new RedHttpServer(5000, "Frontend");
             var startTime = DateTime.UtcNow;
             var db = new Database("WorkTimeDatabaseHashboiii");
 
             // We log to terminal here
             var logger = new TerminalLogging();
             server.Plugins.Register<ILogging, TerminalLogging>(logger);
-            
-            
+
             server.Get("/hey", async (req, res) =>
             {
+                db.NewUser("hashboi");
                 var sess = db.GetUsersSessions("hashboi");
                 
                 Console.WriteLine(sess.Count);
@@ -31,12 +31,43 @@ namespace Schedulr
 
                 foreach (var sesh in sess)
                 {
-                    Console.WriteLine(sesh.start);
+                    Console.WriteLine(sesh.ToString());
                 }
 
 
                 await res.SendString("Hi my dude");
             });
+
+            server.Get("/newses", async (req, res) =>
+            {
+                Session s = new Session()
+                {
+                    Start = DateTime.Now,
+                    End = DateTime.Today,
+                    Wage = 100
+                };
+                db.AddSession(s, "hashboi");
+                
+                await res.SendString("Added session ");
+            });
+
+            server.Get("/register", async (req, res) =>
+            {
+                var files = Directory.GetFiles(".");
+                foreach (var file in files)
+                {
+                    Console.WriteLine(file.ToString());
+                }
+                await res.SendFile("Frontend/newuser.html");
+            });
+
+            server.Post("/registered", async (req, res) =>
+            {
+                var x = await req.GetFormDataAsync();
+                
+                await res.SendString($"You registered as {x.TryGetValue("key").ToString()}");
+            });
+
 
             // URL param demo
             server.Get("/:param1/:paramtwo/:somethingthird", async (req, res) =>

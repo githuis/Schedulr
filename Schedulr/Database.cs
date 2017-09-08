@@ -7,99 +7,144 @@ namespace Schedulr
 {
     public class Database
     {
-        private static string databaseName, target;
-
-        private readonly LiteCollection<User> _users;
+        private static string databaseName, target = "Users";
 
         public Database(string dbname)
         {
-            var db = new LiteDatabase(dbname);
-            _users = db.GetCollection<User>();
+            databaseName = dbname;
         }
-        
+
         public bool UserExists(string key)
         {
-           return _users.Exists(u => u.key == key);
+            using (var db = new LiteDatabase(databaseName))
+            {
+                var users = db.GetCollection<User>(target);
+                bool result = users.Exists(u => u.Key == key);
+
+                //Console.WriteLine($"User {key} exists? {result}");
+
+                return result;
+            }
         }
 
         public List<Session> GetUsersSessions(string key)
         {
-            if (UserExists(key))
+            using (var db = new LiteDatabase(databaseName))
             {
-                User x = _users.FindOne(u => u.key == key);
+                var users = db.GetCollection<User>(target);
 
-                return x.sessions;
+                if (UserExists(key))
+                {
+                    User x = users.FindOne(u => u.Key == key);
+
+                    return x.Sessions;
+                }
             }
-            
-            Console.WriteLine("User not found");
-            
+
+            Console.WriteLine($"Error: User {key} not found");
             return new List<Session>();
         }
 
         public User GetUser(string key)
         {
-            if (UserExists(key))
+            using (var db = new LiteDatabase(databaseName))
             {
-                return _users.FindOne(u => u.key == key);
+                var users = db.GetCollection<User>(target);
+                if (UserExists(key))
+                {
+                    return users.FindOne(u => u.Key == key);
+                }
+                else
+                    return null; //Throw error?
             }
-            else
-                return null; //Throw error?
         }
 
         public User NewUser(string newkey)
         {
-            User u = new User()
+            using (var db = new LiteDatabase(databaseName))
             {
-                key = newkey,
-                jobs = new List<Job>(),
-                sessions = new List<Session>()
-            };
+                var users = db.GetCollection<User>(target);
 
-            _users.Insert(u);
+                if(UserExists(newkey))
+                {
+                    Console.WriteLine("User already exists! Aboring");
+                    return null;
+                }
 
-            return u;
+                User u = new User()
+                {
+                    Key = newkey,
+                    Jobs = new List<Job>(),
+                    Sessions = new List<Session>()
+                };
+
+
+
+                users.Insert(u);
+
+                return u;
+            }
 
         }
 
         public void AddSession(Session s, string key)
         {
-            if (UserExists(key))
+            using (var db = new LiteDatabase(databaseName))
             {
-                var u = _users.FindOne(x => x.key == key);
-                
-                if(u.sessions.Contains(s))
-                    throw new Exception("User already has this session!");
-                
-                u.sessions.Add(s);
-                
-                _users.Update(u);
+                var users = db.GetCollection<User>(target);
+
+                if (UserExists(key))
+                {
+                    var u = users.FindOne(x => x.Key == key);
+
+                    if (u.Sessions.Contains(s))
+                        throw new Exception("User already has this session!");
+
+                    u.Sessions.Add(s);
+
+                    users.Update(u);
+
+
+                }
+                else
+                    return;
 
             }
-            else
-                return;
         }
     }
-    
+
     public class User
     {
-        public string key { get; set; }
-        public List<Job> jobs { get; set; }
-        public List<Session> sessions { get; set; }
+        [BsonId]
+        public string Key { get; set; }
+        public List<Job> Jobs { get; set; }
+        public List<Session> Sessions { get; set; }
 
+        public override bool Equals(object obj) => ((User)obj).Key == Key;
 
+        public override int GetHashCode()
+        {
+            return 990326508 + EqualityComparer<string>.Default.GetHashCode(Key);
+        }
     }
 
     public class Job
     {
-        public decimal hourly { get; set; }
-        public string name { get; set; }
+        public decimal Hourly { get; set; }
+        public string Name { get; set; }
     }
 
     public class Session
     {
-        public DateTime start { get; set; }
-        public DateTime end { get; set; }
-        public decimal wage;
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public decimal Wage { get; set; }
+        public string Description { get; set; }
+
+        public override string ToString()
+        {
+            return $"Work session {Start} - {End} at {Wage}. Description: {Description}.";
+        }
     }
-    
+
 }
