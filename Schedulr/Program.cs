@@ -64,9 +64,12 @@ namespace Schedulr
             server.Post("/registered", async (req, res) =>
             {
                 var x = await req.GetFormDataAsync();
-                
-                await res.SendString($"You registered as {x.TryGetValue("key").ToString()}");
+
+                //await res.SendString($"You registered as {x.TryGetValue("key").ToString()}");
+                await res.SendString("");
             });
+
+
 
 
             // URL param demo
