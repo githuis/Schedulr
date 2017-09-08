@@ -13,7 +13,7 @@ namespace Schedulr
 
         public Database(string dbname)
         {
-            var db = new LiteDatabase(databaseName);
+            var db = new LiteDatabase(dbname);
             _users = db.GetCollection<User>();
         }
         
@@ -31,6 +31,8 @@ namespace Schedulr
                 return x.sessions;
             }
             
+            Console.WriteLine("User not found");
+            
             return new List<Session>();
         }
 
@@ -44,9 +46,37 @@ namespace Schedulr
                 return null; //Throw error?
         }
 
-        public User NewUser()
+        public User NewUser(string newkey)
         {
-            
+            User u = new User()
+            {
+                key = newkey,
+                jobs = new List<Job>(),
+                sessions = new List<Session>()
+            };
+
+            _users.Insert(u);
+
+            return u;
+
+        }
+
+        public void AddSession(Session s, string key)
+        {
+            if (UserExists(key))
+            {
+                var u = _users.FindOne(x => x.key == key);
+                
+                if(u.sessions.Contains(s))
+                    throw new Exception("User already has this session!");
+                
+                u.sessions.Add(s);
+                
+                _users.Update(u);
+
+            }
+            else
+                return;
         }
     }
     

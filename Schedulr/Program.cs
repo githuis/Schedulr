@@ -24,9 +24,18 @@ namespace Schedulr
             
             server.Get("/hey", async (req, res) =>
             {
+                var sess = db.GetUsersSessions("hashboi");
                 
+                Console.WriteLine(sess.Count);
+                
+
+                foreach (var sesh in sess)
+                {
+                    Console.WriteLine(sesh.start);
+                }
+
+
                 await res.SendString("Hi my dude");
-                
             });
 
             // URL param demo
