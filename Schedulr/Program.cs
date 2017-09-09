@@ -56,7 +56,7 @@ namespace Schedulr
             {
                 var x = await req.GetFormDataAsync();
 
-                var userkey = x["key"];
+                var userkey = x["key"][0];
 
                 var usr = db.NewUser(userkey);
 
@@ -75,7 +75,7 @@ namespace Schedulr
             {
                 var x = await req.GetFormDataAsync();
 
-                var userkey = x["key"];
+                var userkey = x["key"][0];
 
                 Console.WriteLine(req.Cookies.Count);
                 if(db.UserExists(userkey))
@@ -131,8 +131,8 @@ namespace Schedulr
             server.Get("/hello", async (req, res) =>
             {
                 var queries = req.Queries;
-                var firstname = queries["firstname"];
-                var lastname = queries["lastname"];
+                var firstname = queries["firstname"][0];
+                var lastname = queries["lastname"][0];
                 await res.SendString($"Hello {firstname} {lastname}, have a nice day");
             });
 
