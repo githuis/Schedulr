@@ -17,7 +17,7 @@ namespace Schedulr
             var server = new RedHttpServer(5000, "Frontend");
             var startTime = DateTime.UtcNow;
             var db = new Database("WorkTimeDatabaseHashboiii");
-            var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), "localhost");
+            var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), "localhost", secure: false);
 
             // We log to terminal here
             var logger = new TerminalLogging();
