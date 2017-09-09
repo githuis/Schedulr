@@ -67,7 +67,7 @@ namespace Schedulr
 
                 if(UserExists(newkey))
                 {
-                    Console.WriteLine("User already exists! Aboring");
+                    Console.WriteLine($"User with key {newkey} already exists!");
                     return null;
                 }
 
@@ -77,8 +77,6 @@ namespace Schedulr
                     Jobs = new List<Job>(),
                     Sessions = new List<Session>()
                 };
-
-
 
                 users.Insert(u);
 

@@ -147,4 +147,14 @@ namespace StockManager
             public DateTime Expires { get; set; }
         }
     }
+
+    class SessionData
+    {
+        public string Key { get; set; }
+
+        public SessionData(string key)
+        {
+            Key = key;
+        }
+    }
 }

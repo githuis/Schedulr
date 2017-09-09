@@ -4,6 +4,7 @@ using RedHttpServerCore;
 using RedHttpServerCore.Plugins;
 using RedHttpServerCore.Plugins.Interfaces;
 using RedHttpServerCore.Response;
+using StockManager;
 
 namespace Schedulr
 {
@@ -16,6 +17,7 @@ namespace Schedulr
             var server = new RedHttpServer(5000, "Frontend");
             var startTime = DateTime.UtcNow;
             var db = new Database("WorkTimeDatabaseHashboiii");
+            var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), "localhost");
 
             // We log to terminal here
             var logger = new TerminalLogging();
@@ -38,36 +40,58 @@ namespace Schedulr
                 await res.SendString("Hi my dude");
             });
 
-            server.Get("/newses", async (req, res) =>
-            {
-                Session s = new Session()
-                {
-                    Start = DateTime.Now,
-                    End = DateTime.Today,
-                    Wage = 100
-                };
-                db.AddSession(s, "hashboi");
-                
-                await res.SendString("Added session ");
-            });
-
             server.Get("/register", async (req, res) =>
             {
-                var files = Directory.GetFiles(".");
-                foreach (var file in files)
-                {
-                    Console.WriteLine(file.ToString());
-                }
                 await res.SendFile("Frontend/newuser.html");
+            });
+
+            server.Get("/login", async (req, res) =>
+            {
+                Console.WriteLine(req.Cookies.Count);
+
+                await res.SendFile("Frontend/login.html");
             });
 
             server.Post("/registered", async (req, res) =>
             {
                 var x = await req.GetFormDataAsync();
 
-                //await res.SendString($"You registered as {x.TryGetValue("key").ToString()}");
-                await res.SendString("");
+                var userkey = x["key"];
+
+                var usr = db.NewUser(userkey);
+
+                if(usr == null)
+                {
+                    await res.SendString("Oh boy, somebody already used this key!");
+                }
+                else
+                {
+                    await res.SendString("Welcome to Schedulr!");
+                }
+
             });
+
+            server.Post("/loggedin", async (req, res) =>
+            {
+                var x = await req.GetFormDataAsync();
+
+                var userkey = x["key"];
+
+                Console.WriteLine(req.Cookies.Count);
+                if(db.UserExists(userkey))
+                {
+                    var cookie = sessionManager.OpenSession(new SessionData(userkey));
+                    res.AddHeader("Set-Cookie", cookie);
+                    
+                    await res.SendString($"Welcome {userkey}, added a cookie for you!");
+                }
+                else
+                {
+                    await res.SendString("No user found with that key, sorry!");
+                }
+            });
+
+
 
 
 
