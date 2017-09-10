@@ -112,23 +112,15 @@ namespace Schedulr
                 {
                     var x = await req.GetFormDataAsync();
 
-                    if (!DateTime.TryParse(x["start-time"][0], out var date))
+                    if (!DateTime.TryParse(x["start-time"][0], out var date) ||
+                        !double.TryParse(x["duration"][0], NumberStyles.Number, CultureInfo.InvariantCulture,
+                            out double duration) || !int.TryParse(x["wage"][0], out int wage))
+                    {
+                        await res.SendString("NO!");
                         return;
-
-                    string dur = x["duration"][0];
+                    }
                     
-                        
-                    if (string.IsNullOrEmpty(dur))
-                        return;
-
-                    if (!double.TryParse(dur, NumberStyles.Number, CultureInfo.InvariantCulture, out double duration))
-                        return;
-
-                    if (!int.TryParse(x["wage"][0], out int wage))
-                        return;
-
-
-                    var session = new Session()
+                    var session = new Session
                     {
                         Start = date,
                         End = date.AddHours(duration),
@@ -136,8 +128,6 @@ namespace Schedulr
                     };
                         
                     db.AddSession(session, sd.Key);
-                    var dbs = db.GetUsersSessions(sd.Key);
-                    Console.WriteLine(dbs);
                 }
 
                 await res.SendString("OK");
