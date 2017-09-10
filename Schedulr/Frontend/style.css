@@ -3,8 +3,14 @@ table{
     width: 100%;
 }
 
-#NewTimePopup {
-    width:auto;
+#newtimepopup {
+    width:500px;
     margin-left:auto;
     margin-right:auto;
+}
+
+.modal-popup {
+    background: #9fA8DA;
+    padding: 20px;
+    
 }

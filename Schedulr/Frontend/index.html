@@ -14,38 +14,59 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h3>Welcome <% user-key %></h3>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <div class="row">
-            <div class="six columns">
-                <button id="addButton" class="u-full-width">Tilføj tid</button>
-            </div>
-            <div class="six columns">
-                <button id="profileButton" class="u-full-width">Profil</button>
-            </div>
+<div class="container">
+    <h3>Welcome <% userkey %> have fun</h3>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <div class="row">
+        <div class="six columns">
+            <button id="addButton" class="u-full-width">Tilføj tid</button>
         </div>
-        <div>
-            <table>
-                <thead>
-                <th>Timer</th>
-                <th>Start tid</th>
-                <th>Slut tid</th>
-                <th>Løn</th>
-                <th>Handlinger</th>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>3</td>
-                        <td>14:00 1./9. 2017</td>
-                        <td>17:00 1./9. 2017</td>
-                        <td>1337 kr.</td>
-                        <td><i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-times" aria-hidden="true"></i></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="six columns">
+            <button id="profileButton" class="u-full-width">Profil</button>
         </div>
     </div>
-    <script src="main.js"></script>
+    <div id="contentbody">
+        content chanable
+    </div>
+    <div>
+        <table>
+            <thead>
+            <th>Timer</th>
+            <th>Start tid</th>
+            <th>Slut tid</th>
+            <th>Løn</th>
+            <th>Handlinger</th>
+            </thead>
+            <tbody>
+            <% usersessions %>
+            <!--
+                        <tr>
+                            <td>3</td>
+                            <td>14:00 1./9. 2017</td>
+                            <td>17:00 1./9. 2017</td>
+                            <td>1337 kr.</td>
+                            <td><i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-times" aria-hidden="true"></i></td>
+                        </tr>
+            -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<span>
+    
+<template id="newtimepopup-template">
+    <div id="newtimepopup" class="modal-popup">
+            <form action="/submittime" method="post">
+                <label>Start</label><input type="datetime-local" value="Start" class="u-full-width"/> <br />
+                <label>Duration</label><input type="number" class="u-full-width"/> <br />
+                <label>Wage</label><input type="number" class="u-full-width">
+                <input type="submit" value="submit" />
+            </form>
+    </div>
+</template>
+
+</span>
+<script src="main.js"></script>
 </body>
 </html>

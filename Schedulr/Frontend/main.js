@@ -1,13 +1,21 @@
 
-$("#addButton").click(function () {
+// $("#addbutton").click(function () {
+//
+//     console.log("hellooo!");
+//
+//
+//     $.magnificPopup.open( {type:'inline', src: $("#newtimepopup-template").html()})
+// });
 
-    console.log("Hellooo!");
-
-    document.getElementById("contentbody").innerHTML = '<object type="text/html" data="AddSessionPopup.html"> </object>';
-
-    //$.magnifiquePopup.
+$("#addButton").magnificPopup({
+    items: {
+   type:'inline',
+   src: $("#newtimepopup-template").html()}
 });
 
 $("#profileButton").click(function () {
-    window.location = "localhost:5000/login";
+    console.log("Redirecting to login");
+    window.location.href = "/login";
+    
 });
+

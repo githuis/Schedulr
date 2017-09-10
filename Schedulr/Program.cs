@@ -38,7 +38,7 @@ namespace Schedulr
 
                     rp.Add("usersessions", allSessionStrings);
                     
-                    await res.RenderPage("Frontend/home.ecs", rp);
+                    //await res.RenderPage("Frontend/home.ecs", rp);
                 }
             });
 
@@ -47,20 +47,20 @@ namespace Schedulr
                 await res.SendFile("Frontend/newuser.html");
             });
 
-            server.Get("/login", async (req, res) =>
-            {
-                SessionData sd;
-                if (sessionManager.TryAuthenticateRequest(req, res, out sd, false))
-                {
-                    Console.WriteLine("User is logged in as: " + sd.Key);
-                    await res.Redirect("/home");
-                    return;
-                }
-                else
-                    Console.WriteLine("User is not logged in already - showing login page");
-
-                await res.SendFile("Frontend/login.html");
-            });
+//            server.Get("/login", async (req, res) =>
+//            {
+//                SessionData sd;
+//                if (sessionManager.TryAuthenticateRequest(req, res, out sd, false))
+//                {
+//                    Console.WriteLine("User is logged in as: " + sd.Key);
+//                    await res.Redirect("/home");
+//                    return;
+//                }
+//                else
+//                    Console.WriteLine("User is not logged in already - showing login page");
+//
+//                await res.SendFile("Frontend/login.html");
+//            });
 
             server.Post("/registered", async (req, res) =>
             {
@@ -92,7 +92,7 @@ namespace Schedulr
                     var cookie = sessionManager.OpenSession(new SessionData(userkey));
                     res.AddHeader("Set-Cookie", cookie);
 
-                    await res.Redirect("/home");
+                    await res.Redirect("/");
 
                     //await res.SendString($"Welcome {userkey}, added a cookie for you!");
                 }
@@ -100,6 +100,12 @@ namespace Schedulr
                 {
                     await res.SendString("No user found with that key, sorry!");
                 }
+            });
+            
+            
+            server.Post("/submittime", async (req, res) =>
+            {
+                await res.SendString("submitted");
             });
 
 

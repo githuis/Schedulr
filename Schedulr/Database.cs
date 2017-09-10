@@ -148,6 +148,7 @@ namespace Schedulr
 
         public string ToHtmlTableRow()
         {
+            
             return $"<tr><td> {HoursWorked()}</td>" +
                 $"<td> {Start.ToShortDateString()}</td>" +
                 $"<td> {End.ToShortDateString()}</td>" +
