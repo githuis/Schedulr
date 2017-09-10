@@ -42,23 +42,6 @@ namespace Schedulr
                 }
             });
 
-            server.Get("/hey", async (req, res) =>
-            {
-                db.NewUser("hashboi");
-                var sess = db.GetUsersSessions("hashboi");
-                
-                Console.WriteLine(sess.Count);
-                
-
-                foreach (var sesh in sess)
-                {
-                    Console.WriteLine(sesh.ToString());
-                }
-
-
-                await res.SendString("Hi my dude");
-            });
-
             server.Get("/register", async (req, res) =>
             {
                 await res.SendFile("Frontend/newuser.html");
@@ -70,6 +53,8 @@ namespace Schedulr
                 if (sessionManager.TryAuthenticateRequest(req, res, out sd, false))
                 {
                     Console.WriteLine("User is logged in as: " + sd.Key);
+                    await res.Redirect("/home");
+                    return;
                 }
                 else
                     Console.WriteLine("User is not logged in already - showing login page");
