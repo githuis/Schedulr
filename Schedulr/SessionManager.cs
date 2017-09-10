@@ -148,23 +148,23 @@ namespace StockManager
         }
     }
 
-    class SessionData
+    public class SessionData
     {
-        public string Key { get; set; }
+        public string Username { get; set; }
 
-        public SessionData(string key)
+        public SessionData(string username)
         {
-            Key = key;
+            Username = username;
         }
 
         public override string ToString()
         {
-            return Key;
+            return Username;
         }
 
         public override int GetHashCode()
         {
-            return Key.Length;
+            return Username.Length;
         }
     }
 }

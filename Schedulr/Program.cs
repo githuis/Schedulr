@@ -2,6 +2,7 @@
 using System.Data;
 using System.Globalization;
 using System.IO;
+using Microsoft.AspNetCore.Http;
 using RedHttpServerCore;
 using RedHttpServerCore.Plugins;
 using RedHttpServerCore.Plugins.Interfaces;
@@ -25,56 +26,23 @@ namespace Schedulr
             var logger = new TerminalLogging();
             server.Plugins.Register<ILogging, TerminalLogging>(logger);
 
-            server.Get("/home", async (req, res) =>
-            {
-                if(sessionManager.TryAuthenticateRequest(req, res, out SessionData sd, false))
-                {
-                    RenderParams rp = new RenderParams();
-                    rp.Add("userkey", sd.Key);
-
-                    string allSessionStrings = "";
-                    foreach(var sesh in db.GetUsersSessions(sd.Key))
-                    {
-                        allSessionStrings += sesh.ToHtmlTableRow();
-                    }
-
-                    rp.Add("usersessions", allSessionStrings);
-                    
-                    //await res.RenderPage("Frontend/home.ecs", rp);
-                }
-            });
-
             server.Get("/register", async (req, res) =>
             {
                 await res.SendFile("Frontend/newuser.html");
             });
 
-//            server.Get("/login", async (req, res) =>
-//            {
-//                SessionData sd;
-//                if (sessionManager.TryAuthenticateRequest(req, res, out sd, false))
-//                {
-//                    Console.WriteLine("User is logged in as: " + sd.Key);
-//                    await res.Redirect("/home");
-//                    return;
-//                }
-//                else
-//                    Console.WriteLine("User is not logged in already - showing login page");
-//
-//                await res.SendFile("Frontend/login.html");
-//            });
-
-            server.Post("/registered", async (req, res) =>
+            server.Post("/register", async (req, res) =>
             {
                 var x = await req.GetFormDataAsync();
 
-                var userkey = x["key"][0];
+                var username = x["username"][0];
+                var hash = BCrypt.Net.BCrypt.HashPassword(x["password"][0]);
 
-                var usr = db.NewUser(userkey);
+                var usr = db.NewUser(username, hash);
 
                 if(usr == null)
                 {
-                    await res.SendString("Oh boy, somebody already used this key!");
+                    await res.SendString("Oh boy, somebody already used this key!", status:400);
                 }
                 else
                 {
@@ -82,25 +50,53 @@ namespace Schedulr
                 }
 
             });
-
-            server.Post("/loggedin", async (req, res) =>
+            
+            server.Post("/submitnewjob", async (req, res) =>
             {
+                if (!sessionManager.TryAuthenticateRequest(req, res, out SessionData sd, false))
+                {
+                    await res.SendString("FAIL");
+                    return;
+                }
+
                 var x = await req.GetFormDataAsync();
 
-                var userkey = x["key"][0];
-
-                if(db.UserExists(userkey))
+                if(!db.AddJob(x, sd))
                 {
-                    var cookie = sessionManager.OpenSession(new SessionData(userkey));
-                    res.AddHeader("Set-Cookie", cookie);
+                    await res.SendString("FAIL");
+                    return;
+                }
+                    
 
-                    await res.Redirect("/");
-
-                    //await res.SendString($"Welcome {userkey}, added a cookie for you!");
+            });
+            
+            server.Get("/user", async (req, res) =>
+            {
+                if (sessionManager.TryAuthenticateRequest(req, res, out SessionData sd, false))
+                {
+                    await res.SendJson(db.GetUser(sd.Username));
                 }
                 else
                 {
-                    await res.SendString("No user found with that key, sorry!");
+                    await res.SendString("Please login first", status: 401);
+                }
+            });
+
+            server.Post("/login", async (req, res) =>
+            {
+                var x = await req.GetFormDataAsync();
+
+
+                if(db.CorrectPassword(x["username"][0], x["password"][0]))
+                {
+                    var cookie = sessionManager.OpenSession(new SessionData(x["username"][0]));
+                    res.AddHeader("Set-Cookie", cookie);
+
+                    await res.Redirect("/");
+                }
+                else
+                {
+                    await res.SendString("No user found with that username or password, sorry!", status: 401);
                 }
             });
             
@@ -116,21 +112,23 @@ namespace Schedulr
                         !double.TryParse(x["duration"][0], NumberStyles.Number, CultureInfo.InvariantCulture,
                             out double duration) || !int.TryParse(x["wage"][0], out int wage))
                     {
-                        await res.SendString("NO!");
+                        await res.SendString("FAIL");
                         return;
                     }
                     
                     var session = new Session
                     {
+                        Id = Guid.NewGuid().ToString("N").Substring(8),
+                        Username = sd.Username,
                         Start = date,
                         End = date.AddHours(duration),
-                        Wage = wage
+                        Earned = wage
                     };
-                        
-                    db.AddSession(session, sd.Key);
+                    
+                    await res.SendJson(db.AddSession(session));
                 }
 
-                await res.SendString("OK");
+                await res.SendString("FAIL");
             });
 
 

@@ -1,164 +1,232 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.X509Certificates;
 using LiteDB;
+using BCrypt;
+using Microsoft.AspNetCore.Http;
+using RedHttpServerCore.Plugins.Interfaces;
+using StockManager;
+using Newtonsoft.Json;
 
 namespace Schedulr
 {
     public class Database
     {
-        private static string databaseName, target = "Users";
+        private string databaseName;
+        private const string userCollection = "Users", sessionCollection = "Sessions";
+        private LiteCollection<User> _users;
+        private LiteCollection<Session> _sessions;
 
         public Database(string dbname)
         {
             databaseName = dbname;
+            var litedb = new LiteDatabase(databaseName);
+            _users = litedb.GetCollection<User>(userCollection);
+            _sessions = litedb.GetCollection<Session>(sessionCollection);
         }
 
-        public bool UserExists(string key)
+        public bool UserExists(string username)
         {
-            using (var db = new LiteDatabase(databaseName))
-            {
-                var users = db.GetCollection<User>(target);
-                bool result = users.Exists(u => u.Key == key);
-
-                //Console.WriteLine($"User {key} exists? {result}");
-
-                return result;
-            }
+            return _users.Exists(u => u.Username == username);
         }
 
-        public List<Session> GetUsersSessions(string key)
+        public bool CorrectPassword(string username, string password)
         {
-            using (var db = new LiteDatabase(databaseName))
+            if (UserExists(username))
             {
-                var users = db.GetCollection<User>(target);
-
-                if (UserExists(key))
+                if (BCrypt.Net.BCrypt.Verify(password, GetPassword(username)))
                 {
-                    User x = users.FindOne(u => u.Key == key);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+                return false;
+        }
+
+        public string GetPassword(string username)
+        {
+            if (UserExists(username))
+            {
+                using (var db = new LiteDatabase(databaseName))
+                {
+                    return db.GetCollection<User>(userCollection).FindOne(u => u.Username == username).Password;
+                }
+            }
+            return"";
+        }
+
+        public List<Session> GetUsersSessions(string username)
+        {
+            using (var db = new LiteDatabase(databaseName))
+            {
+                var users = db.GetCollection<User>(userCollection);
+
+                if (UserExists(username))
+                {
+                    User x = users.FindOne(u => u.Username == username);
 
                     return x.Sessions;
                 }
             }
 
-            Console.WriteLine($"Error: User {key} not found");
+            Console.WriteLine($"Error: User {username} not found");
             return new List<Session>();
         }
 
-        public User GetUser(string key)
+        public User GetUser(string username)
         {
-            using (var db = new LiteDatabase(databaseName))
-            {
-                var users = db.GetCollection<User>(target);
-                if (UserExists(key))
-                {
-                    return users.FindOne(u => u.Key == key);
-                }
-                else
-                    return null; //Throw error?
-            }
+            return _users.FindById(username);
         }
 
-        public User NewUser(string newkey)
+        public User NewUser(string username, string password)
         {
-            using (var db = new LiteDatabase(databaseName))
+            if (username.Length < 4 || password.Length < 4)
             {
-                var users = db.GetCollection<User>(target);
-
-                if(UserExists(newkey))
-                {
-                    Console.WriteLine($"User with key {newkey} already exists!");
-                    return null;
-                }
-
-                User u = new User()
-                {
-                    Key = newkey,
-                    Jobs = new List<Job>(),
-                    Sessions = new List<Session>()
-                };
-
-                users.Insert(u);
-
-                return u;
+                return null;
             }
 
+            string hash = BCrypt.Net.BCrypt.HashPassword(password);
+
+            var user = GetUser(username);
+
+            if (user == null)
+                return null;
+            
+            
+            
+            User u = new User()
+            {
+                Username = username,
+                Password = hash,
+            };
+
+            _users.Insert(u);
+            
+            return u;
         }
 
-        public void AddSession(Session s, string key)
+        public Session AddSession(Session s)
         {
-            using (var db = new LiteDatabase(databaseName))
+            _sessions.Insert(s);
+
+            ProcessSession(s);
+
+            return s;
+        }
+
+        private static void ProcessSession(Session session)
+        {
+            session.hou
+        }
+
+
+        public void DeleteSession(int sessionId, string key)
+        {
+            
+        }
+
+        public bool AddJob(IFormCollection form, SessionData sd)
+        {
+            if (!form.ContainsKey("name") || !form.ContainsKey("wage") || !form.ContainsKey("rules"))
+                return false;
+
+            if (string.IsNullOrEmpty(form["name"][0]) || string.IsNullOrEmpty(form["wage"][0]) ||
+                string.IsNullOrEmpty(form["rules"][0]))
+                return false;
+            
+            string title = form["name"][0];
+            
+            
+
+            if (!decimal.TryParse(form["wage"][0], out var wage))
+                return false;
+
+            var rules = JsonConvert.DeserializeObject<List<Rule>>(form["rules"][0]);
+
+            if (rules == null)
+                return false;
+
+
+
+            var job = new Job()
             {
-                var users = db.GetCollection<User>(target);
+                Name = title,
+                Hourly = wage,
+                Id = Guid.NewGuid().ToString("N").Substring(8),
+                Rules = rules
+            };
 
-                if (UserExists(key))
-                {
-                    var u = users.FindOne(x => x.Key == key);
+            var user = GetUser(sd.Username);
+            user.Jobs.Add(job);
+            _users.Update(user);
 
-                    if (u.Sessions.Contains(s))
-                        throw new Exception("User already has this session!");
-
-                    u.Sessions.Add(s);
-
-                    users.Update(u);
-
-
-                }
-                else
-                    return;
-
-            }
+            return true;
         }
     }
 
     public class User
     {
         [BsonId]
-        public string Key { get; set; }
-        public List<Job> Jobs { get; set; }
-        public List<Session> Sessions { get; set; }
-
-        public override bool Equals(object obj) => ((User)obj).Key == Key;
-
-        public override int GetHashCode()
-        {
-            return 990326508 + EqualityComparer<string>.Default.GetHashCode(Key);
-        }
+        public string Username { get; set; }
+        [JsonIgnore]
+        public string Password { get; set; }
+        public List<Job> Jobs { get; set; } = new List<Job>();
     }
 
     public class Job
     {
+        [BsonId]
+        public string Id { get; set; }
         public decimal Hourly { get; set; }
         public string Name { get; set; }
+        public List<Rule> Rules { get; set; } = new List<Rule>();
+    }
+
+    public class Rule
+    {
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public enum Type {Percentage, Extra, Wage}
+        public Rule.Type RuleType { get; set; }
+        public decimal Value { get; set; }
     }
 
     public class Session
     {
+        [BsonId]
+        public string Id { get; set; }
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
-        public decimal Wage { get; set; }
-        public string Description { get; set; }
+        public decimal Earned { get; set; }
 
-        
+        public double Hours
+        {
+            get
+            {
+                return (End - Start).TotalHours;
+            }
+        }
+
+        [JsonIgnore]
+        public string Description { get; set; }
+        [JsonIgnore]
+        public string Username { get; set; }
+        [JsonIgnore]
+        public string Job { get; set; }
+
 
         public override string ToString()
         {
-            return $"Work session {Start} - {End} at {Wage}. Description: {Description}.";
+            return $"Work session {Start} - {End} at {Earned}. Description: {Description}.";
         }
 
-        public string ToHtmlTableRow()
+        public Session()
         {
-            
-            return $"<tr><td> {HoursWorked()}</td>" +
-                $"<td> {Start.ToShortDateString()}</td>" +
-                $"<td> {End.ToShortDateString()}</td>" +
-                $"<td> {Wage} </td>" +
-                $" <td><i class='fa fa-cog' aria-hidden='true'></i><i class='fa fa-times' aria-hidden='true'></i></td></tr>";
-        }
-        
-        private double HoursWorked()
-        {
-            return (Start - End).TotalHours;
         }
     }
 
