@@ -62,3 +62,7 @@ footer div {
 input[type=submit] {
     float: right;
 }
+
+.fa-times {
+    cursor: pointer;
+}

@@ -31,13 +31,13 @@
     <div>
         <table>
             <thead>
-            <th class="sortable">Hours<i class='fa fa-sort' aria-hidden='true'></i></td></th>
-            <th class="sortable">Start time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
-            <th class="sortable">End time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
-            <th class="sortable">Earned<i class='fa fa-sort' aria-hidden='true'></i></td></th>
-            <th>Actions</th>
+                <th class="sortable">Hours<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+                <th class="sortable">Start time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+                <th class="sortable">End time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+                <th class="sortable">Earned<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+                <th>Actions</th>
             </thead>
-            <tbody>
+            <tbody id="sessionTable">
             </tbody>
         </table>
     </div>
@@ -80,8 +80,55 @@
                 <input class="u-full-width" type="password" name="oldPwd" required="required" placeholder="Current password" pattern=".{4,}">
                 <input class="u-full-width" type="password" name="newPwd" required="required" placeholder="New password" pattern=".{4,}">
                 <input class="u-full-width" type="password" required="required" placeholder="Repeat new password">
-                <input type="submit" value="Change password">
+                <input class="u-full-width" type="submit" value="Change password">
             </form>
+        <button class="u-full-width" id="addJob">Add new job</button>
+    </div>
+</template>
+<template id="newjobpopup-template">
+    <div class="modal-popup">
+        <label for="addJobForm">Add new job</label>
+            <div class="row">
+                <form id="addJobForm">
+                <label>Job name</label>
+                <input class="u-full-width" type="text" name="name" required="required">
+                <label>Standard wage</label>
+                <input class="u-full-width" type="number" name="wage" required="required">
+                <label>Rules</label>
+                <table>
+                    <thead>
+                        <th>Start time</th>
+                        <th>End time</th>
+                        <th>Rule type</th>
+                        <th>Value</th>
+                        <th></th>
+                    </thead>
+                    <tbody id="newJobRules"></tbody>
+                </table>
+                <input type="submit" value="Save new job">
+            </form>
+            </div>
+            <div class="row">
+                <form id="addJobRuleForm">
+                <div style="width: 49%; display: inline-block">
+                    <label>Start time</label>
+                    <input class="u-full-width" name="start" type="time" required="required">
+                </div>
+                <div style="width: 49%; display: inline-block; float: right;">
+                    <label>End time</label>
+                    <input class="u-full-width" name="end" type="time" required="required">
+                </div>
+                <label>Rule type</label>
+                <select class="u-full-width" name="type" required="required">
+                    <option value="Percentage">Percentage</option>
+                    <option value="Extra">Extra</option>
+                    <option value="Wage">Wage</option>
+                </select>
+                <label>Value</label>
+                <input class="u-full-width" type="number" name="value" required="required" min="0">
+                <input class="u-full-width" type="submit" value="Add rule">
+            </form>
+            </div>
     </div>
 </template>
 </span>

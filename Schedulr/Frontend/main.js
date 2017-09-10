@@ -1,6 +1,10 @@
 $.getJSON("/user", function (user) {
     $("h3").text("Welcome user.name");
 });
+var jobs = ["Game teaching", "Cleaning"];
+var $sessions = $("#sessionTable");
+var $body = $("body");
+
 $("#addButton").click(function () {
     $.magnificPopup.open({
         items: {
@@ -15,25 +19,14 @@ $("#addButton").click(function () {
     $("#submittimeform").find("select").empty().append(s);
 });
 
-
 $("#profileButton").magnificPopup({
     items: {
         type:'inline',
         src: $("#profilepopup-template").html()
     }
 });
-var $sessions = $("#tbody");
-function addSessionToTable(session) {
-    $sessions.append(
-    "<tr data-obj='"+JSON.stringify(session)+"'>" +
-        "<td>"+session.Hours+"</td>" +
-        "<td>"+moment(session.Start).format("L LT")+"</td>" +
-        "<td>"+moment(session.End).format("L LT")+"</td>" +
-        "<td>"+session.Earned+"</td>" +
-        "<td><i class='fa fa-cog' aria-hidden='true'></i><i class='fa fa-times' aria-hidden='true'></td>" +
-    "</tr>");
-}
-$("body").on("submit", "#submittimeform", function (ev) {
+
+$body.on("submit", "#submittimeform", function (ev) {
     ev.preventDefault();
     var form = new FormData($(this)[0]);
     if (form.get("duration") === "" && form.get("end") === "")
@@ -43,7 +36,26 @@ $("body").on("submit", "#submittimeform", function (ev) {
         $.magnificPopup.close();
     })
 });
-$("body").on("click", "#submittimeform input[type=checkbox]", function () {
+
+$body.on("submit", "#addJobRuleForm", function (ev) {
+    ev.preventDefault();
+    var form = new FormData($(this)[0]);
+    var s = "<tr>" +
+                "<td>" + form.get("start") + "</td>" +
+                "<td>" + form.get("end") + "</td>" +
+                "<td>" + form.get("type") + "</td>" +
+                "<td>" + form.get("value") + "</td>" +
+                "<td><i class='fa fa-times' aria-hidden='true'></i></td>" +
+            "</tr>"
+    $("#newJobRules").append(s);
+    $(this)[0].reset();
+});
+$body.on("click", "#addJobForm .fa-times", function () {
+    $(this).parent().parent().remove();
+});
+
+
+$body.on("click", "#submittimeform input[type=checkbox]", function () {
     var date = $("#newtimeenddate");
     var dur = $("#newtimeduration");
 
@@ -62,18 +74,35 @@ $("body").on("click", "#submittimeform input[type=checkbox]", function () {
         dur.find("input").prop("required", "required");
     }
 });
-$("tbody").on("click", "tr", function (ev) {
+
+$body.on("click", "#addJob", function () {
+    $.magnificPopup.open({items: {
+        type:'inline',
+        src: $("#newjobpopup-template").html()
+    }});
+});
+
+$sessions.on("click", "tr", function (ev) {
     ev.preventDefault();
     var session = JSON.parse($(this).attr("data-obj"));
     console.log(session);
 });
 
-var jobs = ["Game teaching", "Cleaning"];
+function addSessionToTable(session) {
+    $sessions.append(
+        "<tr data-obj='"+JSON.stringify(session)+"'>" +
+        "<td>"+session.Hours+"</td>" +
+        "<td>"+moment(session.Start).format("L LT")+"</td>" +
+        "<td>"+moment(session.End).format("L LT")+"</td>" +
+        "<td>"+session.Earned+"</td>" +
+        "<td><i class='fa fa-cog' aria-hidden='true'></i><i class='fa fa-times' aria-hidden='true'></td>" +
+        "</tr>");
+}
+
 function ajaxPost(url, formdata, success, fail) {
     $.ajax({url: url, data:formdata, type:"POST", casche: false, contentType: false, processData: false,
         statusCode: {200: success, 401: fail, 404:fail }});
 }
-
 
 function comparer(index) {
     return function(a, b) {
