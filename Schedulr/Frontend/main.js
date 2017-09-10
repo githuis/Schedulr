@@ -44,7 +44,7 @@ $body.on("submit", "#addJobForm", function (ev) {
     $("#newJobRules").find("tr").each(function (tr) {
         arr.push(JSON.parse($(this).attr("data-obj")))
     });
-    form.append("Rules", JSON.stringify(arr));
+    form.append("rules", JSON.stringify(arr));
     ajaxPost("/submitnewjob", form, function (sess) {
         addSessionToTable(sess);
         $.magnificPopup.close();

@@ -67,7 +67,7 @@ input[type=submit] {
     cursor: pointer;
 }
 
-input[type=datetime-local] {
+input[type=datetime-local], input[type=time] {
     height: 38px;
     padding: 6px 10px;
     background-color: #fff;
