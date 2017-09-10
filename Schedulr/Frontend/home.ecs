@@ -15,7 +15,7 @@
 </head>
 <body>
     <div class="container">
-        <h3>Welcome <% user-key %></h3>
+        <h3>Welcome <% userkey %> have fun</h3>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <div class="row">
             <div class="six columns">
@@ -24,6 +24,9 @@
             <div class="six columns">
                 <button id="profileButton" class="u-full-width">Profil</button>
             </div>
+        </div>
+        <div id="contentbody">
+            content chanable
         </div>
         <div>
             <table>
@@ -35,6 +38,8 @@
                 <th>Handlinger</th>
                 </thead>
                 <tbody>
+                    <% usersessions %>
+        <!--
                     <tr>
                         <td>3</td>
                         <td>14:00 1./9. 2017</td>
@@ -42,6 +47,7 @@
                         <td>1337 kr.</td>
                         <td><i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-times" aria-hidden="true"></i></td>
                     </tr>
+        -->
                 </tbody>
             </table>
         </div>

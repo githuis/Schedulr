@@ -156,5 +156,15 @@ namespace StockManager
         {
             Key = key;
         }
+
+        public override string ToString()
+        {
+            return Key;
+        }
+
+        public override int GetHashCode()
+        {
+            return Key.Length;
+        }
     }
 }

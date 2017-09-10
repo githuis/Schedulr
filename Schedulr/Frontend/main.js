@@ -1,6 +1,9 @@
 
 $("#addButton").click(function () {
-    $.magnifiquePopup.
+
+    console.log("Hellooo!");
+
+    //$.magnifiquePopup.
 });
 
 $("#profileButton").click(function () {

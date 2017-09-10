@@ -139,9 +139,25 @@ namespace Schedulr
         public decimal Wage { get; set; }
         public string Description { get; set; }
 
+        
+
         public override string ToString()
         {
             return $"Work session {Start} - {End} at {Wage}. Description: {Description}.";
+        }
+
+        public string ToHtmlTableRow()
+        {
+            return $"<tr><td> {HoursWorked()}</td>" +
+                $"<td> {Start.ToShortDateString()}</td>" +
+                $"<td> {End.ToShortDateString()}</td>" +
+                $"<td> {Wage} </td>" +
+                $" <td><i class='fa fa-cog' aria-hidden='true'></i><i class='fa fa-times' aria-hidden='true'></i></td></tr>";
+        }
+        
+        private double HoursWorked()
+        {
+            return (Start - End).TotalHours;
         }
     }
 
