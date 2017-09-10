@@ -19,3 +19,19 @@ $("#profileButton").click(function () {
     
 });
 
+
+$("body").on("submit", "#submittimeform", function (ev) {
+    ev.preventDefault();
+    var form = new FormData($(this)[0]);
+    ajaxPost("/submittime", form, function (e) {
+        console.log(e);
+        $.magnificPopup.close();
+    })
+});
+
+function ajaxPost(url, formdata, success, fail) {
+    $.ajax({url: url, data:formdata, type:"POST", casche: false, contentType: false, processData: false,
+        statusCode: {200: success, 401: fail, 404:fail }});
+    
+}
+

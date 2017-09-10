@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.IO;
 using RedHttpServerCore;
 using RedHttpServerCore.Plugins;
@@ -105,7 +106,40 @@ namespace Schedulr
             
             server.Post("/submittime", async (req, res) =>
             {
-                await res.SendString("submitted");
+
+                if (sessionManager.TryAuthenticateRequest(req, res, out SessionData sd, false))
+                {
+                    var x = await req.GetFormDataAsync();
+
+                    if (!DateTime.TryParse(x["start-time"][0], out var date))
+                        return;
+
+                    string dur = x["duration"][0];
+                    
+                    
+                        
+                    if (string.IsNullOrEmpty(dur))
+                        return;
+
+                    if (double.TryParse(dur, out double duration))
+                        return;
+
+                    if (!int.TryParse(x["wage"][0], out int wage))
+                        return;
+
+
+                    var session = new Session()
+                    {
+                        Start = date,
+                        End = date.AddHours(duration),
+                        Wage = wage
+                    };
+                        
+                    db.AddSession(session, sd.Key);
+                    
+                }
+
+                await res.SendString("OK");
             });
 
 

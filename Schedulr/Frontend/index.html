@@ -57,10 +57,10 @@
     
 <template id="newtimepopup-template">
     <div id="newtimepopup" class="modal-popup">
-            <form action="/submittime" method="post">
-                <label>Start</label><input type="datetime-local" value="Start" class="u-full-width"/> <br />
-                <label>Duration</label><input type="number" class="u-full-width"/> <br />
-                <label>Wage</label><input type="number" class="u-full-width">
+            <form id="submittimeform"  action="/submittime" method="post">
+                <label>Start</label><input type="datetime-local" name="start-time" class="u-full-width"/> <br />
+                <label>Duration</label><input type="number" name="duration" class="u-full-width"/> <br />
+                <label>Wage</label><input type="number" name="wage" class="u-full-width">
                 <input type="submit" value="submit" />
             </form>
     </div>
