@@ -66,3 +66,13 @@ input[type=submit] {
 .fa-times {
     cursor: pointer;
 }
+
+input[type=datetime-local] {
+    height: 38px;
+    padding: 6px 10px;
+    background-color: #fff;
+    border: 1px solid #D1D1D1;
+    border-radius: 4px;
+    box-shadow: none;
+    box-sizing: border-box;
+}

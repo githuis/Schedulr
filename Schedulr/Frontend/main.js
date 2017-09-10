@@ -37,23 +37,41 @@ $body.on("submit", "#submittimeform", function (ev) {
     })
 });
 
+$body.on("submit", "#addJobForm", function (ev) {
+    ev.preventDefault();
+    var form = new FormData($(this)[0]);
+    var arr = [];
+    $("#newJobRules").find("tr").each(function (tr) {
+        arr.push(JSON.parse($(this).attr("data-obj")))
+    });
+    form.append("Rules", JSON.stringify(arr));
+    ajaxPost("/submitnewjob", form, function (sess) {
+        addSessionToTable(sess);
+        $.magnificPopup.close();
+    })
+});
+
 $body.on("submit", "#addJobRuleForm", function (ev) {
     ev.preventDefault();
     var form = new FormData($(this)[0]);
-    var s = "<tr>" +
+    var s = "<tr data-obj='"+JSON.stringify({
+            Start: form.get("start"),
+            End: form.get("end"),
+            Type: form.get("type"),
+            Value: form.get("value")
+        })+"'>" +
                 "<td>" + form.get("start") + "</td>" +
                 "<td>" + form.get("end") + "</td>" +
                 "<td>" + form.get("type") + "</td>" +
                 "<td>" + form.get("value") + "</td>" +
                 "<td><i class='fa fa-times' aria-hidden='true'></i></td>" +
-            "</tr>"
+            "</tr>";
     $("#newJobRules").append(s);
     $(this)[0].reset();
 });
 $body.on("click", "#addJobForm .fa-times", function () {
     $(this).parent().parent().remove();
 });
-
 
 $body.on("click", "#submittimeform input[type=checkbox]", function () {
     var date = $("#newtimeenddate");
