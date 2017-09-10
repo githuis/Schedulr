@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using RedHttpServerCore;
 using RedHttpServerCore.Plugins;
@@ -116,12 +117,11 @@ namespace Schedulr
 
                     string dur = x["duration"][0];
                     
-                    
                         
                     if (string.IsNullOrEmpty(dur))
                         return;
 
-                    if (double.TryParse(dur, out double duration))
+                    if (!double.TryParse(dur, NumberStyles.Number, CultureInfo.InvariantCulture, out double duration))
                         return;
 
                     if (!int.TryParse(x["wage"][0], out int wage))
@@ -136,7 +136,8 @@ namespace Schedulr
                     };
                         
                     db.AddSession(session, sd.Key);
-                    
+                    var dbs = db.GetUsersSessions(sd.Key);
+                    Console.WriteLine(dbs);
                 }
 
                 await res.SendString("OK");
@@ -146,11 +147,11 @@ namespace Schedulr
             
 
             server.Start();
-            
-            while (true)
-            {
-                //Console.Read();
-            }
+            Console.Read();
+            //while (true)
+            //{
+            //    //Console.Read();
+            //}
         }
     }
 }
