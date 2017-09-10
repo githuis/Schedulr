@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Schedulr</title>
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Baloo+Bhaijaan" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css"/>
@@ -15,42 +15,37 @@
 </head>
 <body>
 <div class="container">
-    <h3>Welcome <% userkey %> have fun</h3>
+    <header>
+        Schedulr
+    </header>
+    <h3></h3>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div class="row">
         <div class="six columns">
-            <button id="addButton" class="u-full-width">Tilføj tid</button>
+            <button id="addButton" class="u-full-width">Add new session</button>
         </div>
         <div class="six columns">
-            <button id="profileButton" class="u-full-width">Profil</button>
+            <button id="profileButton" class="u-full-width">Profile</button>
         </div>
-    </div>
-    <div id="contentbody">
-        content chanable
     </div>
     <div>
         <table>
             <thead>
-            <th>Timer</th>
-            <th>Start tid</th>
-            <th>Slut tid</th>
-            <th>Løn</th>
-            <th>Handlinger</th>
+            <th class="sortable">Hours<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+            <th class="sortable">Start time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+            <th class="sortable">End time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+            <th class="sortable">Earned<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+            <th>Actions</th>
             </thead>
             <tbody>
-            <% usersessions %>
-            <!--
-                        <tr>
-                            <td>3</td>
-                            <td>14:00 1./9. 2017</td>
-                            <td>17:00 1./9. 2017</td>
-                            <td>1337 kr.</td>
-                            <td><i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-times" aria-hidden="true"></i></td>
-                        </tr>
-            -->
             </tbody>
         </table>
     </div>
+    <footer>
+        <div>Schedulr</div>
+        <div>Copyright 2017</div>
+        <div>BolSoft & RSoft</div>
+    </footer>
 </div>
 
 <span>
@@ -58,14 +53,37 @@
 <template id="newtimepopup-template">
     <div id="newtimepopup" class="modal-popup">
             <form id="submittimeform"  action="/submittime" method="post">
-                <label>Start</label><input type="datetime-local" name="start-time" class="u-full-width"/> <br />
-                <label>Duration</label><input type="number" name="duration" class="u-full-width"/> <br />
-                <label>Wage</label><input type="number" name="wage" class="u-full-width">
-                <input type="submit" value="submit" />
+                <label>Job</label>
+                <select name="job"></select>
+                <label>Start</label>
+                <input type="datetime-local" required="required" name="start-time" class="u-full-width">
+                <div id="newtimeenddate" style="display: none">
+                    <label>End</label>
+                    <input type="datetime-local" name="end-time" class="u-full-width">
+                </div>
+                <div id="newtimeduration">
+                    <label>Duration</label>
+                    <input type="number" required="required" name="duration" step="0.25" min="0.25" class="u-full-width">
+                </div>
+                <div>
+                    <label>Enter as date</label>
+                    <input type="checkbox">
+                </div>
+                <input type="submit" value="submit">
             </form>
     </div>
 </template>
-
+<template id="profilepopup-template">
+    <div class="modal-popup">
+        <label for="changePwdForm">Change password</label>
+            <form id="changePwdForm">
+                <input class="u-full-width" type="password" name="oldPwd" required="required" placeholder="Current password" pattern=".{4,}">
+                <input class="u-full-width" type="password" name="newPwd" required="required" placeholder="New password" pattern=".{4,}">
+                <input class="u-full-width" type="password" required="required" placeholder="Repeat new password">
+                <input type="submit" value="Change password">
+            </form>
+    </div>
+</template>
 </span>
 <script src="main.js"></script>
 </body>

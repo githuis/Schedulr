@@ -3,14 +3,62 @@ table{
     width: 100%;
 }
 
-#newtimepopup {
-    width:500px;
-    margin-left:auto;
-    margin-right:auto;
-}
 
 .modal-popup {
+    max-width: 500px;
     background: #9fA8DA;
     padding: 20px;
-    
+    margin: 20px auto;
+    position: relative;
+    width: auto;
+}
+
+table {
+    table-layout: fixed;
+}
+header{
+    font-size: 3.6rem;
+    height: 40px;
+    top: 0;
+    text-align: center;
+    margin-bottom: 16px;
+    font-family: 'Baloo Bhaijaan', cursive;
+}
+footer{
+    position: fixed;
+    width: 100%;
+    height: 20px;
+    bottom: 0;
+    left: 0;
+
+}
+
+footer div {
+    width: 33%;
+    display: inline-block;
+    text-align: center;
+}
+
+.fa-sort {
+    margin-left: 8px;
+}
+.sortable {
+    cursor: pointer;
+    -moz-transition: background-color 100ms;
+    -ms-transition: background-color 100ms;
+    -o-transition: background-color 100ms;
+    -webkit-transition: background-color 100ms;
+    transition: background-color 100ms;
+}
+.sortable:hover {
+    -moz-transition: background-color 100ms;
+    -ms-transition: background-color 100ms;
+    -o-transition: background-color 100ms;
+    -webkit-transition: background-color 100ms;
+    transition: background-color 100ms;
+    background-color: #EEEEEE;
+}
+
+input[type=submit] {
+    float: right;
 }

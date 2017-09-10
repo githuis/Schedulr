@@ -1,14 +1,31 @@
 <!DOCTYPE html>
 <head>
     <title>Login - Schedulr</title>
+    <link href="https://fonts.googleapis.com/css?family=Baloo+Bhaijaan" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <center>
-        <h2>Welcome to Scheduler</h2>
-        <p>Please log in below. Currently there is no security implemented, so please dont be a retard.</p>
+    <div class="container">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <header>
+            Schedulr
+        </header>
         <form>
-            <input name="key" />
-            <button name="submit" type="submit" formmethod="post" formaction="/loggedin">Submit</button>
+            <label>Username</label>
+            <input class="u-full-width" type="text" name="username" required="required" pattern=".{4,}"/>
+            <label>Password</label>
+            <input class="u-full-width" type="password" name="password" required="required" pattern=".{4,}"/>
+            <input type="submit" value="Log in">
         </form>
-    </center>
+        <p class="status"></p>
+        <footer>
+            <div>Schedulr</div>
+            <div>Copyright 2017</div>
+            <div>BolSoft & RSoft</div>
+        </footer>
+    </div>
+    <script src="main.js"></script>
 </body>
