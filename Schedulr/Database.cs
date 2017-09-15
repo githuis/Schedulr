@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.X509Certificates;
 using LiteDB;
+using System.Linq;
 using BCrypt;
 using Microsoft.AspNetCore.Http;
 using RedHttpServerCore.Plugins.Interfaces;
@@ -62,20 +63,7 @@ namespace Schedulr
 
         public List<Session> GetUsersSessions(string username)
         {
-            using (var db = new LiteDatabase(databaseName))
-            {
-                var users = db.GetCollection<User>(userCollection);
-
-                if (UserExists(username))
-                {
-                    User x = users.FindOne(u => u.Username == username);
-
-                    return x.Sessions;
-                }
-            }
-
-            Console.WriteLine($"Error: User {username} not found");
-            return new List<Session>();
+            return _sessions.Find(s => s.Username == username).ToList<Session>();
         }
 
         public User GetUser(string username)
@@ -121,7 +109,7 @@ namespace Schedulr
 
         private static void ProcessSession(Session session)
         {
-            session.hou
+            //session.hou
         }
 
 
