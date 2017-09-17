@@ -7,7 +7,9 @@ using RedHttpServerCore;
 using RedHttpServerCore.Plugins;
 using RedHttpServerCore.Plugins.Interfaces;
 using RedHttpServerCore.Response;
-using StockManager;
+//using StockManager;
+using Rosenbjerg.SessionManager;
+using System.Linq;
 
 namespace Schedulr
 {
@@ -20,7 +22,7 @@ namespace Schedulr
             var server = new RedHttpServer(5000, "Frontend");
             var startTime = DateTime.UtcNow;
             var db = new Database("WorkTimeDatabaseHashboiii");
-            var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), "localhost", secure: false) { TokenName = "key-token" };
+            var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), "localhost", secure: false);
 
             // We log to terminal here
             var logger = new TerminalLogging();
@@ -34,13 +36,11 @@ namespace Schedulr
             server.Post("/register", async (req, res) =>
             {
                 var x = await req.GetFormDataAsync();
-
                 var username = x["username"][0];
-                var hash = BCrypt.Net.BCrypt.HashPassword(x["password"][0]);
+                var pass1 = x["password1"][0];
+                var pass2 = x["password2"][0];
 
-                var usr = db.NewUser(username, hash);
-
-                if(usr == null)
+                if(!db.Register(username, pass1, pass2))
                 {
                     await res.SendString("Oh boy, somebody already used this key!", status:400);
                 }
@@ -53,7 +53,7 @@ namespace Schedulr
             
             server.Post("/submitnewjob", async (req, res) =>
             {
-                if (!sessionManager.TryAuthenticateRequest(req, res, out SessionData sd, false))
+                if (!sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
                 {
                     await res.SendString("FAIL");
                     return;
@@ -72,7 +72,7 @@ namespace Schedulr
             
             server.Get("/user", async (req, res) =>
             {
-                if (sessionManager.TryAuthenticateRequest(req, res, out SessionData sd, false))
+                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
                 {
                     await res.SendJson(db.GetUser(sd.Username));
                 }
@@ -82,12 +82,27 @@ namespace Schedulr
                 }
             });
 
+            server.Get("/sessions", async (req, res) =>
+            {
+                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
+                {
+                    var q = req.Queries;
+                    var a = db.GetUsersSessions(sd.Username, q);
+                    await res.SendJson(a);
+                    return;
+                }
+                await res.SendString("\"[]\"", contentType:"text/json");
+            });
+
             server.Post("/login", async (req, res) =>
             {
                 var x = await req.GetFormDataAsync();
+                Console.WriteLine(x.ToString());
 
+                var username = x["username"][0];
+                var pass = x["password"][0];
 
-                if(db.CorrectPassword(x["username"][0], x["password"][0]))
+                if(db.Login(username, pass))
                 {
                     var cookie = sessionManager.OpenSession(new SessionData(x["username"][0]));
                     res.AddHeader("Set-Cookie", cookie);
@@ -104,31 +119,40 @@ namespace Schedulr
             server.Post("/submittime", async (req, res) =>
             {
 
-                if (sessionManager.TryAuthenticateRequest(req, res, out SessionData sd, false))
+                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd ))
                 {
                     var x = await req.GetFormDataAsync();
 
-                    if (!DateTime.TryParse(x["start-time"][0], out var date) ||
-                        !double.TryParse(x["duration"][0], NumberStyles.Number, CultureInfo.InvariantCulture,
-                            out double duration) || !int.TryParse(x["wage"][0], out int wage))
+                    if (!DateTime.TryParse(x["start-time"][0], out var date) || !double.TryParse(x["duration"][0], NumberStyles.Number, CultureInfo.InvariantCulture, out double duration))
                     {
                         await res.SendString("FAIL");
                         return;
                     }
-                    
+
+                    User u = db.GetUser(sd.Username);
+                    Job j = u.Jobs.FirstOrDefault(b => b.Name == x["job"][0]);
+
+
                     var session = new Session
                     {
                         Id = Guid.NewGuid().ToString("N").Substring(8),
+                        JobId = j.Id,
+                        Job = j.Name,
                         Username = sd.Username,
-                        Start = date,
-                        End = date.AddHours(duration),
-                        Earned = wage
+                        StartDate = date,
+                        EndDate = date.AddHours(duration),
                     };
-                    
-                    await res.SendJson(db.AddSession(session));
-                }
 
-                await res.SendString("FAIL");
+                    session.Earned = Database.ProcessSession(session, j);
+
+                    var sess = db.AddSession(session, j);
+                    
+                    await res.SendJson(sess);
+                }
+                else
+                {
+                    await res.SendString("/login", status: 403);
+                }
             });
 
 
@@ -140,6 +164,26 @@ namespace Schedulr
             //{
             //    //Console.Read();
             //}
+        }
+    }
+
+    public class SessionData
+    {
+        public string Username { get; set; }
+
+        public SessionData(string username)
+        {
+            Username = username;
+        }
+
+        public override string ToString()
+        {
+            return Username;
+        }
+
+        public override int GetHashCode()
+        {
+            return Username.Length;
         }
     }
 }

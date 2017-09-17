@@ -29,6 +29,27 @@
         </div>
     </div>
     <div>
+        <form id="search-form">
+            <div class="two columns">
+                <select  class="u-full-width" id="search-job">
+                </select>
+
+            </div>
+            <div class="two columns">
+                <input  class="u-full-width" type="number" min="0" name="earned" />
+            </div>
+            <div class="three columns">
+                <input  class="u-full-width"type="datetime-local" name="start" />
+            </div>
+            <div class="three columns">
+                <input class="u-full-width" type="datetime-local" name="end" />
+
+            </div>
+            <div class="two columns">
+                <input class="u-full-width" type="submit"/>
+
+            </div>
+        </form>
         <table>
             <thead>
                 <th class="sortable">Hours<i class='fa fa-sort' aria-hidden='true'></i></td></th>
@@ -56,7 +77,7 @@
                 <label>Job</label>
                 <select name="job"></select>
                 <label>Start</label>
-                <input type="datetime-local" required="required" name="start-time" class="u-full-width">
+                <input type="datetime-local" id="start-time-input" required="required" name="start-time" class="u-full-width">
                 <div id="newtimeenddate" style="display: none">
                     <label>End</label>
                     <input type="datetime-local" name="end-time" class="u-full-width">

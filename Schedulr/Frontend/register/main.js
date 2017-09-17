@@ -7,6 +7,7 @@ $("form").submit(function (ev) {
     }
     $.ajax({
         url: "/register",
+        type: 'POST',
         data: form,
         cache: false,
         contentType: false,
