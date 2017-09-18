@@ -12,7 +12,10 @@ $.getJSON("/user", function (user) {
         s += "<option value='" + job.Name + "'>" + job.Name + "</option>";
 
     })
+
+    
     $("#search-job").append(s);
+    
     $("#search-form").submit(function (ev) {
         ev.preventDefault();
         var query = $(this).serialize();
@@ -25,6 +28,13 @@ $.getJSON("/user", function (user) {
         });
 
     }).submit();
+
+    //I know it's bad
+    var searchFormEnd =moment().format("YYYY-MM-DDTHH:mm");
+    var searchFormStart = moment().subtract(1, 'months').format("YYYY-MM-DDTHH:mm");
+    $("#search-form").find("#time-form-start").val(searchFormStart);
+    $("#search-form").find("#time-form-end").val(searchFormEnd);
+    
 }).fail(function (x) {
     window.location.replace("/login");
 });
