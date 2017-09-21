@@ -10,6 +10,7 @@ $("form").submit(function (ev) {
         processData: false,
         statusCode: {
             200: function () {
+                console.log("Hells yeah");
                 location.replace("/");
             },
             401: function () {

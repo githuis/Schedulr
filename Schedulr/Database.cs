@@ -132,9 +132,23 @@ namespace Schedulr
             return earned;
         }
 
-        public void DeleteSession(int sessionId, string key)
+        /// <summary>
+        /// Attempts to delete session. Won't if the username doesn't match the one on the session.
+        /// </summary>
+        /// <param name="sessionId"></param>
+        /// <param name="username"></param>
+        /// <returns>False if session cannot be deleted, true otherwise.</returns>
+        public bool DeleteSession(string sessionId, string username)
         {
+            var session = _sessions.FindById(sessionId);
 
+            if(session != null && session.Username == username)
+            {
+                _sessions.Delete(sessionId);
+                return true;
+            }
+
+            return false;
         }
 
         public bool AddJob(IFormCollection form, SessionData sd)

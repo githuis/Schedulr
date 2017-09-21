@@ -20,6 +20,7 @@ $.getJSON("/user", function (user) {
         ev.preventDefault();
         var query = $(this).serialize();
         $.getJSON("/sessions?" + query, function (sessions) {
+            //console.log(query);
             var s = "";
             sessions.forEach(function (session) {
                 s += addSessionToTable(session);
@@ -29,11 +30,9 @@ $.getJSON("/user", function (user) {
 
     }).submit();
 
-    //I know it's bad
-    var searchFormEnd =moment().format("YYYY-MM-DDTHH:mm");
-    var searchFormStart = moment().subtract(1, 'months').format("YYYY-MM-DDTHH:mm");
-    $("#search-form").find("#time-form-start").val(searchFormStart);
-    $("#search-form").find("#time-form-end").val(searchFormEnd);
+    //Enter today and 1 month ago into search form
+    $("#search-form").find("#time-form-start").val( moment().subtract(1, 'months').format("YYYY-MM-DDTHH:mm"));
+    $("#search-form").find("#time-form-end").val(moment().format("YYYY-MM-DDTHH:mm"));
     
 }).fail(function (x) {
     window.location.replace("/login");
@@ -140,8 +139,8 @@ $body.on("click", "#addJob", function () {
 
 $sessions.on("click", "tr", function (ev) {
     ev.preventDefault();
-    var session = JSON.parse($(this).attr("data-obj"));
-    console.log(session);
+    //var session = JSON.parse($(this)[0]);
+    //console.log(session);
 });
 
 function addSessionToTable(session) {
@@ -150,9 +149,21 @@ function addSessionToTable(session) {
                 "<td>" + moment(session.StartDate).format("YYYY-MM-DD H:mm") + "</td>" +
                 "<td>" + moment(session.EndDate).format("YYYY-MM-DD H:mm") + "</td>" +
                 "<td>" + session.Earned + "</td>" +
-                "<td><i class='fa fa-cog' aria-hidden='true'></i><i class='fa fa-times' aria-hidden='true'></i></td>" +
+                "<td><i class='fa fa-cog' aria-hidden='true'></i><i id='delete-session' class='fa fa-times' aria-hidden='true'></i></td>" +
             "</tr>";
 }
+
+$body.on("click", "#delete-session", function () {
+    var row = $(this).parent().parent();
+    var sessionObject = row.attr("data-id");
+
+    var form = new FormData();
+    form.append("deleteTarget", sessionObject);
+    row.remove();
+
+    ajaxPost("/deletesession", form, function () { console.log("Succesfully deleted"); }, function () { console.log("Failed to delete");});
+
+});
 
 function ajaxPost(url, formdata, success, fail) {
     $.ajax({

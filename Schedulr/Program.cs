@@ -15,7 +15,7 @@ namespace Schedulr
 {
     class Program
     {
-        
+
         static void Main(string[] args)
         {
             // We serve static files, such as index.html from the 'public' directory
@@ -40,9 +40,9 @@ namespace Schedulr
                 var pass1 = x["password1"][0];
                 var pass2 = x["password2"][0];
 
-                if(!db.Register(username, pass1, pass2))
+                if (!db.Register(username, pass1, pass2))
                 {
-                    await res.SendString("Oh boy, somebody already used this key!", status:400);
+                    await res.SendString("Oh boy, somebody already used this key!", status: 400);
                 }
                 else
                 {
@@ -50,7 +50,7 @@ namespace Schedulr
                 }
 
             });
-            
+
             server.Post("/submitnewjob", async (req, res) =>
             {
                 if (!sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
@@ -61,15 +61,15 @@ namespace Schedulr
 
                 var x = await req.GetFormDataAsync();
 
-                if(!db.AddJob(x, sd))
+                if (!db.AddJob(x, sd))
                 {
                     await res.SendString("FAIL");
                     return;
                 }
-                    
+
 
             });
-            
+
             server.Get("/user", async (req, res) =>
             {
                 if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
@@ -91,7 +91,7 @@ namespace Schedulr
                     await res.SendJson(a);
                     return;
                 }
-                await res.SendString("\"[]\"", contentType:"text/json");
+                await res.SendString("\"[]\"", contentType: "text/json");
             });
 
             server.Post("/login", async (req, res) =>
@@ -102,24 +102,24 @@ namespace Schedulr
                 var username = x["username"][0];
                 var pass = x["password"][0];
 
-                if(db.Login(username, pass))
+                if (db.Login(username, pass))
                 {
                     var cookie = sessionManager.OpenSession(new SessionData(x["username"][0]));
                     res.AddHeader("Set-Cookie", cookie);
 
-                    await res.Redirect("/");
+                    await res.SendString("Sucess!");
                 }
                 else
                 {
                     await res.SendString("No user found with that username or password, sorry!", status: 401);
                 }
             });
-            
-            
+
+
             server.Post("/submittime", async (req, res) =>
             {
 
-                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd ))
+                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
                 {
                     var x = await req.GetFormDataAsync();
 
@@ -146,7 +146,7 @@ namespace Schedulr
                     session.Earned = Database.ProcessSession(session, j);
 
                     var sess = db.AddSession(session, j);
-                    
+
                     await res.SendJson(sess);
                 }
                 else
@@ -155,8 +155,31 @@ namespace Schedulr
                 }
             });
 
+            server.Post("/deletesession", async (req, res) =>
+            {
+                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
+                {
+                    var form = await req.GetFormDataAsync();
 
-            
+
+                    if (form.ContainsKey("deleteTarget") 
+                    && db.DeleteSession(form["deleteTarget"], sd.Username))
+                    {
+                        await res.SendString("Sucess");
+                        return;
+                    }
+
+                    await res.SendString("Error", status: 403);
+                }
+                else
+                {
+                    await res.SendString("Error, user not logged in", status: 401);
+                }
+
+            });
+
+
+
 
             server.Start();
             Console.Read();
