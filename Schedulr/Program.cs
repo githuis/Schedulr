@@ -10,6 +10,7 @@ using RedHttpServerCore.Response;
 //using StockManager;
 using Rosenbjerg.SessionManager;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Schedulr
 {
@@ -66,7 +67,7 @@ namespace Schedulr
                     await res.SendString("FAIL");
                     return;
                 }
-
+                await res.SendString("OK");
 
             });
 
@@ -96,41 +97,42 @@ namespace Schedulr
 
             server.Post("/login", async (req, res) =>
             {
-                var x = await req.GetFormDataAsync();
-                Console.WriteLine(x.ToString());
-
-                var username = x["username"][0];
-                var pass = x["password"][0];
-
-                if (db.Login(username, pass))
+                var form = await req.GetFormDataAsync();
+                if (form.ContainsKey("username") && form.ContainsKey("password"))
                 {
-                    var cookie = sessionManager.OpenSession(new SessionData(x["username"][0]));
-                    res.AddHeader("Set-Cookie", cookie);
-
-                    await res.SendString("Sucess!");
+                    var username = form["username"][0];
+                    var pass = form["password"][0];
+                    if (db.Login(username, pass))
+                    {
+                        var cookie = sessionManager.OpenSession(new SessionData(form["username"][0]));
+                        res.AddHeader("Set-Cookie", cookie);
+                        await res.SendString("Sucess!");
+                        return;
+                    }
                 }
-                else
-                {
-                    await res.SendString("No user found with that username or password, sorry!", status: 401);
-                }
+                // Just to annoy people who want to try many passwords fast
+                await Task.Delay(350);
+                await res.SendString("No user found with that username or password, sorry!", status: 401);
             });
-
 
             server.Post("/submittime", async (req, res) =>
             {
-
                 if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
                 {
-                    var x = await req.GetFormDataAsync();
+                    var form = await req.GetFormDataAsync();
 
-                    if (!DateTime.TryParse(x["start-time"][0], out var date) || !double.TryParse(x["duration"][0], NumberStyles.Number, CultureInfo.InvariantCulture, out double duration))
+                    //TODO Better input validation please
+                    if (!DateTime.TryParse(form["start-time"][0], out var date) || !double.TryParse(form["duration"][0], NumberStyles.Number, CultureInfo.InvariantCulture, out double duration))
                     {
                         await res.SendString("FAIL");
                         return;
                     }
+                    var desc = "";
+                    if (form.ContainsKey("desc"))
+                        desc = form["desc"][0];
 
                     User u = db.GetUser(sd.Username);
-                    Job j = u.Jobs.FirstOrDefault(b => b.Name == x["job"][0]);
+                    Job j = u.Jobs.FirstOrDefault(b => b.Name == form["job"][0]);
 
 
                     var session = new Session
@@ -182,11 +184,10 @@ namespace Schedulr
 
 
             server.Start();
-            Console.Read();
-            //while (true)
-            //{
-            //    //Console.Read();
-            //}
+            while (true)
+            {
+                Console.ReadLine();
+            }
         }
     }
 

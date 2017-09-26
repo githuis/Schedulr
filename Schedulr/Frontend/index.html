@@ -1,158 +1,160 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Schedulr</title>
-    <link href="https://fonts.googleapis.com/css?family=Baloo+Bhaijaan" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="container">
-    <header>
-        Schedulr
-    </header>
-    <h3></h3>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <div class="row">
-        <div class="six columns">
-            <button id="addButton" class="u-full-width">Add new session</button>
-        </div>
-        <div class="six columns">
-            <button id="profileButton" class="u-full-width">Profile</button>
-        </div>
-    </div>
-    <div>
-        <form id="search-form">
-            <div class="two columns">
-                <select  class="u-full-width" id="search-job">
-                </select>
-
-            </div>
-            <div class="two columns">
-                <input  class="u-full-width" type="number" min="0" name="earned" />
-            </div>
-            <div class="three columns">
-                <input  class="u-full-width"type="datetime-local" id="time-form-start" name="start" />
-            </div>
-            <div class="three columns">
-                <input class="u-full-width" type="datetime-local" id="time-form-end" name="end" />
-
-            </div>
-            <div class="two columns">
-                <input class="u-full-width" type="submit"/>
-
-            </div>
-        </form>
-        <table>
-            <thead>
-                <th class="sortable">Hours<i class='fa fa-sort' aria-hidden='true'></i></td></th>
-                <th class="sortable">Start time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
-                <th class="sortable">End time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
-                <th class="sortable">Earned<i class='fa fa-sort' aria-hidden='true'></i></td></th>
-                <th>Actions</th>
-            </thead>
-            <tbody id="sessionTable">
-            </tbody>
-        </table>
-    </div>
-    <footer>
-        <div>Schedulr</div>
-        <div>Copyright 2017</div>
-        <div>BolSoft & RSoft</div>
-    </footer>
-</div>
-
-<span>
-    
-<template id="newtimepopup-template">
-    <div id="newtimepopup" class="modal-popup">
-            <form id="submittimeform"  action="/submittime" method="post">
-                <label>Job</label>
-                <select name="job"></select>
-                <label>Start</label>
-                <input type="datetime-local" id="start-time-input" required="required" name="start-time" class="u-full-width">
-                <div id="newtimeenddate" style="display: none">
-                    <label>End</label>
-                    <input type="datetime-local" name="end-time" class="u-full-width">
-                </div>
-                <div id="newtimeduration">
-                    <label>Duration</label>
-                    <input type="number" required="required" name="duration" step="0.25" min="0.25" class="u-full-width">
-                </div>
-                <div>
-                    <label>Enter as date</label>
-                    <input type="checkbox">
-                </div>
-                <input type="submit" value="submit">
-            </form>
-    </div>
-</template>
-<template id="profilepopup-template">
-    <div class="modal-popup">
-        <label for="changePwdForm">Change password</label>
-            <form id="changePwdForm">
-                <input class="u-full-width" type="password" name="oldPwd" required="required" placeholder="Current password" pattern=".{4,}">
-                <input class="u-full-width" type="password" name="newPwd" required="required" placeholder="New password" pattern=".{4,}">
-                <input class="u-full-width" type="password" required="required" placeholder="Repeat new password">
-                <input class="u-full-width" type="submit" value="Change password">
-            </form>
-        <button class="u-full-width" id="addJob">Add new job</button>
-    </div>
-</template>
-<template id="newjobpopup-template">
-    <div class="modal-popup">
-        <label for="addJobForm">Add new job</label>
+    <head>
+        <meta charset="UTF-8">
+        <title>Schedulr</title>
+        <link href="https://fonts.googleapis.com/css?family=Baloo+Bhaijaan" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/7.0.0/normalize.min.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                Schedulr
+            </header>
+            <h3></h3>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <div class="row">
-                <form id="addJobForm">
-                <label>Job name</label>
-                <input class="u-full-width" type="text" name="name" required="required">
-                <label>Standard wage</label>
-                <input class="u-full-width" type="number" name="wage" required="required">
-                <label>Rules</label>
-                <table>
-                    <thead>
-                        <th>Start time</th>
-                        <th>End time</th>
-                        <th>Rule type</th>
-                        <th>Value</th>
-                        <th></th>
-                    </thead>
-                    <tbody id="newJobRules"></tbody>
-                </table>
-                <input type="submit" value="Save new job">
-            </form>
-            </div>
-            <div class="row">
-                <form id="addJobRuleForm">
-                <div style="width: 49%; display: inline-block">
-                    <label>Start time</label>
-                    <input class="u-full-width" name="start" type="time" required="required">
+                <div class="six columns">
+                    <button id="addButton" class="u-full-width">Add new session</button>
                 </div>
-                <div style="width: 49%; display: inline-block; float: right;">
-                    <label>End time</label>
-                    <input class="u-full-width" name="end" type="time" required="required">
+                <div class="six columns">
+                    <button id="profileButton" class="u-full-width">Profile</button>
                 </div>
-                <label>Rule type</label>
-                <select class="u-full-width" name="type" required="required">
-                    <option value="Percentage">Percentage</option>
-                    <option value="Extra">Extra</option>
-                    <option value="Wage">Wage</option>
-                </select>
-                <label>Value</label>
-                <input class="u-full-width" type="number" name="value" required="required" min="0">
-                <input class="u-full-width" type="submit" value="Add rule">
-            </form>
             </div>
-    </div>
-</template>
-</span>
-<script src="main.js"></script>
-</body>
+            <div>
+                <form id="search-form">
+                    <div class="two columns">
+                        <select  class="u-full-width" id="search-job">
+                        </select>
+
+                    </div>
+                    <div class="two columns">
+                        <input  class="u-full-width" type="number" min="0" name="earned" />
+                    </div>
+                    <div class="three columns">
+                        <input  class="u-full-width"type="datetime-local" id="time-form-start" name="start" />
+                    </div>
+                    <div class="three columns">
+                        <input class="u-full-width" type="datetime-local" id="time-form-end" name="end" />
+
+                    </div>
+                    <div class="two columns">
+                        <input class="u-full-width" value="Search" type="submit"/>
+                    </div>
+                </form>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                        <th class="sortable">Hours<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+                        <th class="sortable">Start time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+                        <th class="sortable">End time<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+                        <th class="sortable">Earned<i class='fa fa-sort' aria-hidden='true'></i></td></th>
+                        <th>Actions</th>
+                        </thead>
+                        <tbody id="sessionTable" class="empty-placeholder" data-empty-message="No sessions added yet"></tbody>
+                    </table>
+                </div>
+            </div>
+            <footer>
+                <div>Schedulr</div>
+                <div>Copyright 2017</div>
+                <div>BolSoft & RSoft</div>
+            </footer>
+        </div>
+        <span>
+            <template id="newtimepopup-template">
+                <div id="newtimepopup" class="modal-popup">
+                    <form id="submittimeform"  action="/submittime" method="post">
+                        <label>Job</label>
+                        <select name="job" required="required"></select>
+                        <label>Notes</label>
+                        <textarea class="u-full-width" name="desc" placeholder="(Optional)" rows="1"></textarea>
+                        <label>Start</label>
+                        <input type="datetime-local" id="start-time-input" required="required" name="start-time" class="u-full-width">
+                        <div id="newtimeenddate" style="display: none">
+                            <label>End</label>
+                            <input type="datetime-local" name="end-time" class="u-full-width">
+                        </div>
+                        <div id="newtimeduration">
+                            <label>Duration</label>
+                            <input type="number" required="required" name="duration" step="0.25" min="0.25" class="u-full-width">
+                        </div>
+                        <div>
+                            <label>Enter as date</label>
+                            <input type="checkbox">
+                        </div>
+                        <input type="submit" value="Submit">
+                    </form>
+                </div>
+            </template>
+            <template id="profilepopup-template">
+                <div class="modal-popup">
+                    <label for="changePwdForm">Change password</label>
+                        <form id="changePwdForm">
+                            <input class="u-full-width" type="password" name="oldPwd" required="required" placeholder="Current password" pattern=".{4,}">
+                            <input class="u-full-width" type="password" name="newPwd" required="required" placeholder="New password" pattern=".{4,}">
+                            <input class="u-full-width" type="password" required="required" placeholder="Repeat new password">
+                            <input class="u-full-width" type="submit" value="Change password">
+                        </form>
+                    <button class="u-full-width" id="addJob">Add new job</button>
+                </div>
+            </template>
+            <template id="newjobpopup-template">
+                <div class="modal-popup">
+                    <label for="addJobForm">Add new job</label>
+                        <div class="row">
+                            <form id="addJobForm">
+                                <label>Job name</label>
+                                <input class="u-full-width" type="text" name="name" required="required">
+                                <label>Standard wage</label>
+                                <input class="u-full-width" type="number" name="wage" required="required">
+                                <label>Rules</label>
+                                <div class="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <th>Start time</th>
+                                            <th>End time</th>
+                                            <th>Rule type</th>
+                                            <th>Value</th>
+                                            <th></th>
+                                        </thead>
+                                        <tbody id="newJobRules" class="empty-placeholder" data-empty-message="No rules added for job"></tbody>
+                                    </table>
+                                </div>
+                                <input type="submit" value="Save new job">
+                            </form>
+                        </div>
+                        <div class="row">
+                            <form id="addJobRuleForm">
+                            <div style="width: 49%; display: inline-block">
+                                <label>Start time</label>
+                                <input class="u-full-width" name="start" type="time" required="required">
+                            </div>
+                            <div style="width: 49%; display: inline-block; float: right;">
+                                <label>End time</label>
+                                <input class="u-full-width" name="end" type="time" required="required">
+                            </div>
+                            <label>Rule type</label>
+                            <select class="u-full-width" name="type" required="required">
+                                <option value="Percentage">Percentage</option>
+                                <option value="Extra">Extra</option>
+                                <option value="Wage">Wage</option>
+                            </select>
+                            <label>Value</label>
+                            <input class="u-full-width" type="number" name="value" required="required" min="0">
+                            <input class="u-full-width" type="submit" value="Add rule">
+                        </form>
+                        </div>
+                </div>
+            </template>
+        </span>
+        <script src="main.js"></script>
+    </body>
 </html>

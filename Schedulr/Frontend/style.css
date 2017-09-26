@@ -42,6 +42,18 @@ footer div {
 .fa-sort {
     margin-left: 8px;
 }
+.empty-placeholder:empty::after{
+    content: attr(data-empty-message);
+    font-size: 10pt;
+    height: 20px;
+    color: #818181;
+    white-space: nowrap;
+}
+.table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
 .sortable {
     cursor: pointer;
     -moz-transition: background-color 100ms;
