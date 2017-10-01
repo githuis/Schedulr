@@ -21,7 +21,6 @@ namespace Schedulr
         {
             // We serve static files, such as index.html from the 'public' directory
             var server = new RedHttpServer(5000, "Frontend");
-            var startTime = DateTime.UtcNow;
             var db = new Database("WorkTimeDatabaseHashboiii");
             var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), "localhost", secure: false);
 
@@ -122,9 +121,9 @@ namespace Schedulr
                     var form = await req.GetFormDataAsync();
 
                     //TODO Better input validation please
-                    if (!DateTime.TryParse(form["start-time"][0], out var date) || !double.TryParse(form["duration"][0], NumberStyles.Number, CultureInfo.InvariantCulture, out double duration))
+                    if (!ValidateAddSessionForm(form, out var job, out var start, out var end))
                     {
-                        await res.SendString("FAIL");
+                        await res.SendString("Failed", status: 400);
                         return;
                     }
                     var desc = "";
@@ -132,19 +131,23 @@ namespace Schedulr
                         desc = form["desc"][0];
 
                     User u = db.GetUser(sd.Username);
-                    Job j = u.Jobs.FirstOrDefault(b => b.Name == form["job"][0]);
-
+                    Job j = u.Jobs.FirstOrDefault(b => b.Name == job);
+                    if (j == null)
+                    {
+                        await res.SendString("Failed", status: 400);
+                        return;
+                    }
 
                     var session = new Session
                     {
                         Id = Guid.NewGuid().ToString("N").Substring(8),
                         JobId = j.Id,
-                        Job = j.Name,
+                        Description = desc,
+                        Job = job,
                         Username = sd.Username,
-                        StartDate = date,
-                        EndDate = date.AddHours(duration),
+                        StartDate = start,
+                        EndDate = end,
                     };
-
                     session.Earned = Database.ProcessSession(session, j);
 
                     var sess = db.AddSession(session, j);
@@ -188,6 +191,34 @@ namespace Schedulr
             {
                 Console.ReadLine();
             }
+        }
+
+        private static bool ValidateAddSessionForm(IFormCollection form, out string job, out DateTime startTime, out DateTime endTime)
+        {
+            if (CheckFormContains(form, "job") && CheckFormContains(form, "start-time") && DateTime.TryParse(form["start-time"][0], out startTime))
+            {
+                job = form["job"][0];
+                if (CheckFormContains(form, "duration") && double.TryParse(form["duration"][0], out double duration))
+                {
+                    endTime = startTime.AddHours(duration);
+                    return true;
+                }
+                if (CheckFormContains(form, "end-time") && DateTime.TryParse(form["end-time"][0], out endTime))
+                    return true;
+                startTime = DateTime.MinValue;
+                endTime = DateTime.MinValue;
+                return false;
+
+            }
+            job = "";
+            startTime = DateTime.MinValue;
+            endTime = DateTime.MinValue;
+            return false;
+        }
+
+        private static bool CheckFormContains(IFormCollection form, string field)
+        {
+            return form.ContainsKey(field) && form[field][0] != "";
         }
     }
 

@@ -69,6 +69,13 @@
             </footer>
         </div>
         <span>
+            <template id="managejobs-template">
+                <div id="managejobspopup" class="modal-popup">
+                    <ul>
+                        <li>Job title</li>
+                    </ul>
+                </div>
+            </template>
             <template id="newtimepopup-template">
                 <div id="newtimepopup" class="modal-popup">
                     <form id="submittimeform"  action="/submittime" method="post">
@@ -104,6 +111,7 @@
                             <input class="u-full-width" type="submit" value="Change password">
                         </form>
                     <button class="u-full-width" id="addJob">Add new job</button>
+                    <button class="u-full-width" id="manageJobs">Manage jobs</button>
                 </div>
             </template>
             <template id="newjobpopup-template">

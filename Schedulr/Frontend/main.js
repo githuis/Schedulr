@@ -168,6 +168,15 @@ $body.on("click", "#addJob", function () {
     });
 });
 
+$body.on("click", "#manageJobs", function () {
+    $.magnificPopup.open({
+        items: {
+            type: 'inline',
+            src: $("#managejobs-template").html()
+        }
+    });
+});
+
 $sessions.on("click", "tr", function (ev) {
     ev.preventDefault();
     //var session = JSON.parse($(this)[0]);
