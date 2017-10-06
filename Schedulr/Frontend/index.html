@@ -37,9 +37,8 @@
             <div>
                 <form id="search-form">
                     <div class="two columns">
-                        <select  class="u-full-width" id="search-job">
+                        <select  class="u-full-width" id="search-job" name="job">
                         </select>
-
                     </div>
                     <div class="two columns">
                         <input  class="u-full-width" type="number" min="0" name="earned" />
@@ -67,6 +66,9 @@
                         <tbody id="sessionTable" class="empty-placeholder" data-empty-message="No sessions added yet"></tbody>
                     </table>
                 </div>
+                <p style="float:right;" id="totalHours"></p>
+                <a id="downloadResults" class="u-full-width button-style">Download results as text file</a>
+                <a id="sendResults" class="u-full-width button-style">Send results as e-mail</a>
             </div>
             <footer>
                 <div>Schedulr</div>

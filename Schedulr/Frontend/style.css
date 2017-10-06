@@ -88,3 +88,29 @@ input[type=datetime-local], input[type=time] {
     box-shadow: none;
     box-sizing: border-box;
 }
+
+.button-style {
+    display: inline-block;
+    height: 38px;
+    padding: 0 30px;
+    color: #555;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 38px;
+    letter-spacing: .1rem;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    background-color: transparent;
+    border-radius: 4px;
+    border: 1px solid #bbb;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+}
+.button-style:hover {
+    border-color: #616161;
+    color: #424242;
+}

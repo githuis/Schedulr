@@ -14,6 +14,10 @@ function addSessionToTable(session) {
         "</tr>";
 }
 
+function formatSessionText(session) {
+    return moment(session.StartDate).format("YYYY-MM-DD H:mm") + "\t" + moment(session.EndDate).format("YYYY-MM-DD H:mm") + "\tHours: " + session.Hours + "\r\n";
+}
+
 function ajaxPost(url, formdata, success, fail) {
     $.ajax({
         url: url, data: formdata, type: "POST", casche: false, contentType: false, processData: false,
@@ -38,7 +42,6 @@ $.getJSON("/user", function (user) {
     $("h3").text("Welcome " + user.Username);
     jobs = [];
     var s = "";
-    var searchjob = $("#search-job");
     user.Jobs.forEach(function (job) {
         jobs.push(job.Name);
         s += "<option value='" + job.Name + "'>" + job.Name + "</option>";
@@ -47,17 +50,26 @@ $.getJSON("/user", function (user) {
 
     
     $("#search-job").append(s);
-    
+
     $("#search-form").submit(function (ev) {
         ev.preventDefault();
+        var fd = new FormData($(this)[0]);
         var query = $(this).serialize();
         $.getJSON("/sessions?" + query, function (sessions) {
-            //console.log(query);
+            var saveText = "";
             var s = "";
+            var total = 0;
             sessions.forEach(function (session) {
                 s += addSessionToTable(session);
-            })
+                saveText += formatSessionText(session);
+                total += session.Hours;
+            });
+            saveText += "\t\t\t\t\t\t\t\t\t\tTotal: " + total;
             $sessions.append(s);
+            $("#totalHours").text("Total hours: " + total);
+            $("#downloadResults").attr("href", "data:text/plain;charset=utf-8," + encodeURIComponent(saveText));
+            $("#downloadResults").attr("download", fd.get("job ") + ".txt");
+            $("#sendResults").attr("href", "mailto:?body='"+encodeURIComponent(saveText)+"'");
         });
 
     }).submit();
