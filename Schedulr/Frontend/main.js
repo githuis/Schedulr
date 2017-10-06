@@ -57,15 +57,15 @@ $.getJSON("/user", function (user) {
         var query = $(this).serialize();
         $.getJSON("/sessions?" + query, function (sessions) {
             var saveText = "";
-            var emailText = "";
+            var emailHtml = "";
             var s = "";
             var total = 0;
             sessions.forEach(function (session) {
                 s += addSessionToTable(session);
                 saveText += formatSessionText(session);
-                emailText += "<tr>" +
-                    "<td>"+session.StartDate+"</td>" +
-                    "<td>"+session.EndDate+"</td>" +
+                emailHtml += "<tr>" +
+                    "<td>"+moment(session.StartDate).format("YYYY-MM-DD H:mm")+"</td>" +
+                    "<td>"+moment(session.EndDate).format("YYYY-MM-DD H:mm")+"</td>" +
                     "<td>"+session.Hours+"</td>" +
                     "</tr>";
                 total += session.Hours;
@@ -75,7 +75,24 @@ $.getJSON("/user", function (user) {
             $("#totalHours").text("Total hours: " + total);
             $("#downloadResults").attr("href", "data:text/plain;charset=utf-8," + encodeURIComponent(saveText));
             $("#downloadResults").attr("download", fd.get("job ") + ".txt");
-            $("#sendResults").attr("href", "mailto:?body="+encodeURIComponent(emailText));
+            $("#sendResults").attr("href", "mailto:?body="+encodeURIComponent("<table>" +
+                "<thead>" +
+                    "<tr>" +
+                        "<th>Start time</th>" +
+                        "<th>End time</th>" +
+                        "<th>Hours</th>" +
+                    "</tr>" +
+                "</thead>" +
+                "<tfoot>" +
+                    "<tr>" +
+                        "<td></td>" +
+                        "<td></td>" +
+                        "<td>Total: "+total+"</td>" +
+                    "</tr>" +
+                "</tfoot>" +
+                "<tbody>" + emailHtml + "</tbody>" +
+
+                "</table>"));
         });
 
     }).submit();
