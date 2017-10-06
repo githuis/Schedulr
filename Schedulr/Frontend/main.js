@@ -147,15 +147,15 @@ $body.on("click", "#submittimeform input[type=checkbox]", function () {
 
     if ($(this).is(':checked')) {
         dur.hide();
-        dur.find("input").removeProp("required");
+        dur.find("input").removeAttr("required");
         date.show();
-        date.find("input").prop("required", "required");
+        date.find("input").attr("required", "required");
     }
     else {
         date.hide();
-        date.find("input").removeProp("required");
+        date.find("input").removeAttr("required");
         dur.show();
-        dur.find("input").prop("required", "required");
+        dur.find("input").attr("required", "required");
     }
 });
 
