@@ -81,9 +81,11 @@
         <span>
             <template id="managejobs-template">
                 <div id="managejobspopup" class="modal-popup">
-                    <ul>
-                        <li>Job title</li>
+                    <label>Job Title</label>
+                    <ul id="manage-jobs-list">
                     </ul>
+
+
                 </div>
             </template>
             <template id="newtimepopup-template">
@@ -146,7 +148,6 @@
                                         <tbody id="newJobRules" class="empty-placeholder" data-empty-message="No rules added for job"></tbody>
                                     </table>
                                 </div>
-                                <input type="submit" value="Save new job">
                             </form>
                         </div>
                         <div class="row">
@@ -169,6 +170,7 @@
                             <input class="u-full-width" type="number" name="value" required="required" min="0">
                             <input class="u-full-width" type="submit" value="Add rule">
                         </form>
+                            <input form="addJobForm" class="u-full-width" type="submit" value="Save new job">
                         </div>
                 </div>
             </template>

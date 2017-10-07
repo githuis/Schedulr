@@ -10,6 +10,7 @@ using RedHttpServerCore.Response;
 //using StockManager;
 using Rosenbjerg.SessionManager;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Schedulr
@@ -183,7 +184,38 @@ namespace Schedulr
 
             });
 
+            server.Post("deletejob", async (req, res) =>
+            {
+                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
+                {
+                    var form = await req.GetFormDataAsync();
+                    if (CheckFormContains(form, "job"))
+                    {
+                        var user = db.GetUser(sd.Username);
+                        var job = user.Jobs.FirstOrDefault(x => x.Name == form["job"][0]);
 
+                        if (job != null)
+                        {
+                            user.Jobs.Remove(job);
+                            db.UpdateUser(user);
+
+                            await res.SendString("Sucess");
+                        }
+                        else
+                        {
+                            await res.SendString("Error", status: (int) HttpStatusCode.BadRequest);
+                        }
+                    }
+                    else
+                    {
+                        await res.SendString("Error in form", status: 400);
+                    }
+                }
+                else
+                {
+                    await res.SendString("Error, user not logged in", status: 401);
+                }
+            });
 
 
             server.Start();

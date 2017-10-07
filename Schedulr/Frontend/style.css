@@ -114,3 +114,6 @@ input[type=datetime-local], input[type=time] {
     border-color: #616161;
     color: #424242;
 }
+.container {
+    padding-bottom: 60px;
+}

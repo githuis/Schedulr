@@ -6,16 +6,16 @@ function getCellValue(row, index){ return $(row).children('td').eq(index).html()
 
 function addSessionToTable(session) {
     return "<tr data-id='" + session.Id + "'>" +
-        "<td>" + session.Hours + "</td>" +
+        "<td>" + session.Hours.toFixed(1).replace(".0", "") + "</td>" +
         "<td>" + moment(session.StartDate).format("YYYY-MM-DD H:mm") + "</td>" +
         "<td>" + moment(session.EndDate).format("YYYY-MM-DD H:mm") + "</td>" +
-        "<td>" + session.Earned + "</td>" +
+        "<td>" + session.Earned.toFixed(1).replace(".0", "")+ "</td>" +
         "<td><i class='fa fa-cog' aria-hidden='true'></i><i id='delete-session' class='fa fa-times' aria-hidden='true'></i></td>" +
         "</tr>";
 }
 
 function formatSessionText(session) {
-    return moment(session.StartDate).format("YYYY-MM-DD H:mm") + "\t" + moment(session.EndDate).format("YYYY-MM-DD H:mm") + "\tHours: " + session.Hours + "\r\n";
+    return moment(session.StartDate).format("YYYY-MM-DD H:mm") + "\t" + moment(session.EndDate).format("YYYY-MM-DD H:mm") + "\tHours: " + session.Hours.toFixed(1).replace(".0", "") + "\r\n";
 }
 
 function ajaxPost(url, formdata, success, fail) {
@@ -46,9 +46,9 @@ $.getJSON("/user", function (user) {
         jobs.push(job.Name);
         s += "<option value='" + job.Name + "'>" + job.Name + "</option>";
 
-    })
+    });
 
-    
+
     $("#search-job").append(s);
 
     $("#search-form").submit(function (ev) {
@@ -64,30 +64,30 @@ $.getJSON("/user", function (user) {
                 s += addSessionToTable(session);
                 saveText += formatSessionText(session);
                 emailHtml += "<tr>" +
-                    "<td>"+moment(session.StartDate).format("YYYY-MM-DD H:mm")+"</td>" +
-                    "<td>"+moment(session.EndDate).format("YYYY-MM-DD H:mm")+"</td>" +
-                    "<td>"+session.Hours+"</td>" +
+                    "<td style='padding: 3px 15px;'>"+moment(session.StartDate).format("YYYY-MM-DD H:mm")+"</td>" +
+                    "<td style='padding: 3px 15px;'>"+moment(session.EndDate).format("YYYY-MM-DD H:mm")+"</td>" +
+                    "<td style='padding: 3px 15px; text-align:center;'>"+session.Hours.toFixed(1) +"</td>" +
                     "</tr>";
                 total += session.Hours;
             });
-            saveText += "\t\t\t\t\t\t\t\t\t\tTotal: " + total;
+            saveText += "\t\t\t\t\t\t\t\t\t\tTotal: " + total.toFixed(1);
             $sessions.append(s);
-            $("#totalHours").text("Total hours: " + total);
+            $("#totalHours").text("Total hours: " + total.toFixed(1));
             $("#downloadResults").attr("href", "data:text/plain;charset=utf-8," + encodeURIComponent(saveText));
             $("#downloadResults").attr("download", fd.get("job ") + ".txt");
             $("#sendResults").attr("href", "mailto:?body="+encodeURIComponent("<table>" +
                 "<thead>" +
                     "<tr>" +
-                        "<th>Start time</th>" +
-                        "<th>End time</th>" +
-                        "<th>Hours</th>" +
+                        "<th style='padding: 3px 15px;'>Start time</th>" +
+                        "<th style='padding: 3px 15px;'>End time</th>" +
+                        "<th style='padding: 3px 15px;'>Hours</th>" +
                     "</tr>" +
                 "</thead>" +
                 "<tfoot>" +
                     "<tr>" +
-                        "<td></td>" +
-                        "<td></td>" +
-                        "<td>Total: "+total+"</td>" +
+                        "<td style='padding: 3px 15px;'></td>" +
+                        "<td style='padding: 3px 15px;'></td>" +
+                        "<td style='padding: 3px 15px;'>Total: "+total.toFixed(1)+"</td>" +
                     "</tr>" +
                 "</tfoot>" +
                 "<tbody>" + emailHtml + "</tbody>" +
@@ -100,7 +100,7 @@ $.getJSON("/user", function (user) {
     //Enter today and 1 month ago into search form
     $("#search-form").find("#time-form-start").val(moment().subtract(1, 'months').format("YYYY-MM-DDT00:00"));
     $("#search-form").find("#time-form-end").val(moment().format("YYYY-MM-DDT23:59"));
-    
+
 }).fail(function (x) {
     window.location.replace("/login");
 });
@@ -142,15 +142,19 @@ $body.on("submit", "#submittimeform", function (ev) {
 $body.on("submit", "#addJobForm", function (ev) {
     ev.preventDefault();
     var form = new FormData($(this)[0]);
+    var job = form.get("name");
     var arr = [];
     $("#newJobRules").find("tr").each(function (tr) {
         arr.push(JSON.parse($(this).attr("data-obj")))
     });
     form.append("rules", JSON.stringify(arr));
     ajaxPost("/submitnewjob", form, function (sess) {
-        jobs.push(form.get("job"));
+        jobs.push(job);
         $.magnificPopup.close();
-    })
+        $("#search-job").append("<option value='" + job + "'>" + job + "</option>");
+    });
+
+    
 });
 
 $body.on("submit", "#addJobRuleForm", function (ev) {
@@ -209,6 +213,28 @@ $body.on("click", "#manageJobs", function () {
             type: 'inline',
             src: $("#managejobs-template").html()
         }
+    });
+
+    var str = "";
+    jobs.forEach(function (t) { 
+        str += "<li>" + t +
+            "<i class='fa fa-times' style='float:right;' aria-hidden='true'></i>" +
+            "<i class='fa fa-cog' style='float:right;' aria-hidden='true'></i></li>";
+    });
+    $('#manage-jobs-list').append(str);
+});
+
+$body.on("click", "#manage-jobs-list li .fa-times", function () {
+    var $this = $(this);
+    var job = $this.parent().text();
+    var fd = new FormData();
+    fd.append("job", job);
+    
+    ajaxPost("/deletejob", fd, function ()
+    {
+        $this.parent().remove();
+    }, function () {
+       console.log("Could not delete job: " + job);
     });
 });
 

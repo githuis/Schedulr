@@ -67,11 +67,12 @@ namespace Schedulr
             var job = q.ContainsKey("job") ? q["job"][0] : "";
             var start = q.ContainsKey("start") ? q["start"][0] : "";
             var end = q.ContainsKey("end") ? q["end"][0] : "";
+            var hours = q.ContainsKey("hours") ? q["hours"][0] : "";
             Query query = Query.EQ(nameof(Session.Username), username);
             if (job != "")
             {
                 var jobid = _users.FindById(username).Jobs.FirstOrDefault(j => j.Name == job).Id;
-                query = Query.And(query, Query.Contains(nameof(Session.JobId), jobid));
+                query = Query.And(query, Query.EQ(nameof(Session.JobId), jobid));
             }
 
             if(start != "")
@@ -83,8 +84,11 @@ namespace Schedulr
             {
                 query = Query.And(query, Query.LTE(nameof(Session.EndDate), end));
             }
-
-
+            
+            if(hours != "")
+            {
+                query = Query.And(query, Query.GTE(nameof(Session.Hours), hours));
+            }
 
             return _sessions.Find(query, limit: 50).ToList();
         }
@@ -187,6 +191,11 @@ namespace Schedulr
             _users.Update(user);
 
             return true;
+        }
+
+        public void UpdateUser(User u)
+        {
+            _users.Update(u);
         }
     }
 
