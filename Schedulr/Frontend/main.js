@@ -7,15 +7,15 @@ function getCellValue(row, index){ return $(row).children('td').eq(index).html()
 function addSessionToTable(session) {
     return "<tr data-id='" + session.Id + "'>" +
         "<td>" + session.Hours.toFixed(1).replace(".0", "") + "</td>" +
-        "<td>" + moment(session.StartDate).format("YYYY-MM-DD H:mm") + "</td>" +
-        "<td>" + moment(session.EndDate).format("YYYY-MM-DD H:mm") + "</td>" +
+        "<td>" + moment(session.StartDate).format("YYYY-MM-DD HH:mm") + "</td>" +
+        "<td>" + moment(session.EndDate).format("YYYY-MM-DD HH:mm") + "</td>" +
         "<td>" + session.Earned.toFixed(1).replace(".0", "")+ "</td>" +
         "<td><i class='fa fa-cog' aria-hidden='true'></i><i id='delete-session' class='fa fa-times' aria-hidden='true'></i></td>" +
         "</tr>";
 }
 
 function formatSessionText(session) {
-    return moment(session.StartDate).format("YYYY-MM-DD H:mm") + "\t" + moment(session.EndDate).format("YYYY-MM-DD H:mm") + "\tHours: " + session.Hours.toFixed(1).replace(".0", "") + "\r\n";
+    return moment(session.StartDate).format("YYYY-MM-DD HH:mm") + "\t" + moment(session.EndDate).format("YYYY-MM-DD HH:mm") + "\tHours: " + session.Hours.toFixed(1).replace(".0", "") + "\r\n";
 }
 
 function ajaxPost(url, formdata, success, fail) {
@@ -53,7 +53,7 @@ $.getJSON("/user", function (user) {
 
     $("#search-form").submit(function (ev) {
         ev.preventDefault();
-        var fd = new FormData($(this)[0]);
+        var job = $(this).find("select").val();
         var query = $(this).serialize();
         $.getJSON("/sessions?" + query, function (sessions) {
             var saveText = "";
@@ -65,17 +65,27 @@ $.getJSON("/user", function (user) {
                 total += session.Hours;
                 saveText += formatSessionText(session);
                 emailHtml += "<tr>" +
-                    "<td style='padding: 3px 15px;'>"+moment(session.StartDate).format("YYYY-MM-DD H:mm")+"</td>" +
-                    "<td style='padding: 3px 15px;'>"+moment(session.EndDate).format("YYYY-MM-DD H:mm")+"</td>" +
+                    "<td style='padding: 3px 15px;'>"+moment(session.StartDate).format("YYYY-MM-DD HH:mm")+"</td>" +
+                    "<td style='padding: 3px 15px;'>"+moment(session.EndDate).format("YYYY-MM-DD HH:mm")+"</td>" +
                     "<td style='padding: 3px 15px; text-align:center;'>"+session.Hours.toFixed(1) +"</td>" +
                     "</tr>";
             });
-            saveText += "\t\t\t\t\t\t\t\t\t\tTotal: " + total.toFixed(1);
-            $sessions.append(s);
+            saveText += "\t\t\t\t\t\tTotal: " + total.toFixed(1);
+            $sessions.empty().append(s);
 
             $("#totalHours").text("Total hours: " + total.toFixed(1));
             $("#downloadResults").attr("href", "data:text/plain;charset=utf-8," + encodeURIComponent(saveText));
-            $("#downloadResults").attr("download", fd.get("job ") + ".txt");
+            var startMonth = moment($("#time-form-start").val()).format('MMMM');
+            var endMonth = moment($("#time-form-end").val()).format('MMMM');
+            var dl = job;
+            if (startMonth && startMonth != "Invalid date")
+                dl += " - " + startMonth;
+            if (endMonth && endMonth != "Invalid date")
+                dl += " - " + endMonth;
+            dl += ".txt";
+
+            $("#downloadResults").attr("download", dl);
+
             $("#sendResults").attr("href", "mailto:?body="+encodeURIComponent("<table>" +
                 "<thead>" +
                     "<tr>" +
@@ -161,11 +171,20 @@ $body.on("submit", "#addJobForm", function (ev) {
 $body.on("submit", "#addJobRuleForm", function (ev) {
     ev.preventDefault();
     var form = new FormData($(this)[0]);
+
+    var j = 0;
+
+    $("#new-rule-days-checkbox input").each(function (i, ele) {
+        if (ele.checked)
+            j += (1 << i);
+    });
+
     var s = "<tr data-obj='" + JSON.stringify({
         Start: form.get("start"),
         End: form.get("end"),
         Type: form.get("type"),
-        Value: form.get("value")
+        Value: form.get("value"),
+        Days: j
     }) + "'>" +
         "<td>" + form.get("start") + "</td>" +
         "<td>" + form.get("end") + "</td>" +
@@ -265,4 +284,21 @@ $('.sortable').click(function () {
     for (var i = 0; i < rows.length; i++) { table.append(rows[i]) }
 });
 
+$body.on("click", "#day-preset-all", function () {
+    $("#new-rule-days-checkbox input").prop("checked", true);
+    console.log("yayayasdyfsjdflkjsdf");
+});
 
+$body.on("click", "#day-preset-wd", function () {
+    var r = $("#new-rule-days-checkbox input");
+    r.slice(0,6).prop("checked", true);
+    r.slice(5).prop("checked", false);
+});
+
+$body.on("click", "#day-preset-we", function () {
+
+    var r = $("#new-rule-days-checkbox input");
+    
+    r.slice(0, 5).prop("checked", false);
+    r.slice(5).prop("checked", true);
+});

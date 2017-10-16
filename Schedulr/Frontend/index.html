@@ -41,7 +41,7 @@
                         </select>
                     </div>
                     <div class="two columns">
-                        <input  class="u-full-width" type="number" min="0" name="earned" />
+                        <input  class="u-full-width" type="number" min="0" name="earned" placeholder="Earned"/>
                     </div>
                     <div class="three columns">
                         <input  class="u-full-width"type="datetime-local" id="time-form-start" name="start" />
@@ -71,12 +71,12 @@
                 <p style="float:right;" id="totalHours"></p>
                 <a id="downloadResults" class="u-full-width button-style">Download results as text file</a>
                 <a id="sendResults" class="u-full-width button-style">Send results as e-mail</a>
-            </div>
             <footer>
                 <div>Schedulr</div>
                 <div>Copyright 2017</div>
                 <div>BolSoft & RSoft</div>
             </footer>
+            </div>
         </div>
         <span>
             <template id="managejobs-template">
@@ -166,6 +166,28 @@
                                 <option value="Extra">Extra</option>
                                 <option value="Wage">Wage</option>
                             </select>
+                                <div class="day-preset">
+                                    <button id="day-preset-all" class="a-style" type="button">All days</button>
+                                    <button id="day-preset-wd" class="a-style" type="button">Weekdays</button>
+                                    <button id="day-preset-we" class="a-style" type="button">Weekends</button>
+                                </div>
+
+                                <div id="new-rule-days-checkbox">
+                                    <label>M</label>
+                                    <label>T</label>
+                                    <label>W</label>
+                                    <label>T</label>
+                                    <label>F</label>
+                                    <label>S</label>
+                                    <label>S</label>
+                                    <input type="checkbox"  class="squaredFour" value="Monday" checked="checked" />
+                                    <input type="checkbox"  class="squaredFour" value="Tuesday" checked="checked" />
+                                    <input type="checkbox"  class="squaredFour" value="Wednesday" checked="checked" />
+                                    <input type="checkbox"  class="squaredFour" value="Thursday" checked="checked" />
+                                    <input type="checkbox"  class="squaredFour" value="Friday" checked="checked" />
+                                    <input type="checkbox"  class="squaredFour" value="Saturday" checked="checked" />
+                                    <input type="checkbox"  class="squaredFour" value="Sunday" checked="checked" />
+                                </div>
                             <label>Value</label>
                             <input class="u-full-width" type="number" name="value" required="required" min="0">
                             <input class="u-full-width" type="submit" value="Add rule">

@@ -67,7 +67,7 @@ namespace Schedulr
             var job = q.ContainsKey("job") ? q["job"][0] : "";
             var start = q.ContainsKey("start") ? q["start"][0] : "";
             var end = q.ContainsKey("end") ? q["end"][0] : "";
-            var hours = q.ContainsKey("hours") ? q["hours"][0] : "";
+            var earned = q.ContainsKey("earned") ? q["earned"][0] : "";
             Query query = Query.EQ(nameof(Session.Username), username);
             if (job != "")
             {
@@ -85,9 +85,9 @@ namespace Schedulr
                 query = Query.And(query, Query.Where(nameof(Session.EndDate), b => b.AsDateTime <= e));
             }
             
-            if(hours != "" && int.TryParse(hours, out var h))
+            if(earned != "" && double.TryParse(earned, out var h))
             {
-                query = Query.And(query, Query.GTE(nameof(Session.Hours), h));
+                query = Query.And(query, Query.GTE(nameof(Session.Earned), h));
             }
 
 
@@ -100,10 +100,10 @@ namespace Schedulr
             //{
             //    query = Query.And(query, Query.LTE(nameof(Session.EndDate), e));
             //}
-            
 
 
-            var result = _sessions.Find(query, limit: 50).ToList();
+
+            var result = _sessions.Find(query, limit: 50).OrderByDescending(x => x.StartDate).ToList();
 
             return result;
         }
@@ -232,6 +232,7 @@ namespace Schedulr
         public List<Rule> Rules { get; set; } = new List<Rule>();
     }
 
+    
     public class Rule : TimeRange
     {
         public Rule(string name, TimeSpan start, TimeSpan end) : base(name, start, end)
@@ -246,10 +247,15 @@ namespace Schedulr
 
         }
 
+        public ActiveDay ActiveDays { get; set; }
         public enum Type { Percentage, Extra, Wage }
         public Rule.Type RuleType { get; set; }
         public decimal Value { get; set; }
+
+        [Flags]
+        public enum ActiveDay { Monday = 1 << 0, Tuesday = 1 << 1, Wednesday = 1 << 2, Thursday = 1 << 3, Friday = 1 << 4, Saturday = 1 << 5, Sunday = 1 << 6}
     }
+
 
     public class Session : TimeShift
     {

@@ -23,7 +23,7 @@ namespace Schedulr
             // We serve static files, such as index.html from the 'public' directory
             var server = new RedHttpServer(5000, "Frontend");
             var db = new Database("WorkTimeDatabaseHashboiii.db");
-            var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), "localhost", secure: false);
+            var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), secure: false);
 
             // We log to terminal here
             var logger = new TerminalLogging();
@@ -150,6 +150,7 @@ namespace Schedulr
                         EndDate = end,
                     };
                     session.Earned = Database.ProcessSession(session, j);
+                    
 
                     var sess = db.AddSession(session, j);
 
