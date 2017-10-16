@@ -75,22 +75,37 @@ namespace Schedulr
                 query = Query.And(query, Query.EQ(nameof(Session.JobId), jobid));
             }
 
-            if(start != "")
+            if(start != "" && DateTime.TryParse(start, out var s))
             {
-                query = Query.And(query, Query.GTE(nameof(Session.StartDate), start));
+                query = Query.And(query, Query.Where(nameof(Session.StartDate), b => b.AsDateTime >= s));
             }
 
-            if(end != "")
+            if(end != "" && DateTime.TryParse(end, out var e))
             {
-                query = Query.And(query, Query.LTE(nameof(Session.EndDate), end));
+                query = Query.And(query, Query.Where(nameof(Session.EndDate), b => b.AsDateTime <= e));
             }
             
-            if(hours != "")
+            if(hours != "" && int.TryParse(hours, out var h))
             {
-                query = Query.And(query, Query.GTE(nameof(Session.Hours), hours));
+                query = Query.And(query, Query.GTE(nameof(Session.Hours), h));
             }
 
-            return _sessions.Find(query, limit: 50).ToList();
+
+            //if(start != "" && DateTime.TryParse(start, out var s))
+            //{
+            //    query = Query.And(query, Query.GTE(nameof(Session.StartDate), s));
+            //}
+
+            //if(end != "" && DateTime.TryParse(end, out var e))
+            //{
+            //    query = Query.And(query, Query.LTE(nameof(Session.EndDate), e));
+            //}
+            
+
+
+            var result = _sessions.Find(query, limit: 50).ToList();
+
+            return result;
         }
 
         public User GetUser(string username)
