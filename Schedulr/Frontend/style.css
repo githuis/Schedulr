@@ -87,6 +87,7 @@ input[type=datetime-local], input[type=time] {
     border-radius: 4px;
     box-shadow: none;
     box-sizing: border-box;
+    margin-right: 10px;
 }
 
 .button-style {

@@ -62,16 +62,17 @@ $.getJSON("/user", function (user) {
             var total = 0;
             sessions.forEach(function (session) {
                 s += addSessionToTable(session);
+                total += session.Hours;
                 saveText += formatSessionText(session);
                 emailHtml += "<tr>" +
                     "<td style='padding: 3px 15px;'>"+moment(session.StartDate).format("YYYY-MM-DD H:mm")+"</td>" +
                     "<td style='padding: 3px 15px;'>"+moment(session.EndDate).format("YYYY-MM-DD H:mm")+"</td>" +
                     "<td style='padding: 3px 15px; text-align:center;'>"+session.Hours.toFixed(1) +"</td>" +
                     "</tr>";
-                total += session.Hours;
             });
             saveText += "\t\t\t\t\t\t\t\t\t\tTotal: " + total.toFixed(1);
             $sessions.append(s);
+
             $("#totalHours").text("Total hours: " + total.toFixed(1));
             $("#downloadResults").attr("href", "data:text/plain;charset=utf-8," + encodeURIComponent(saveText));
             $("#downloadResults").attr("download", fd.get("job ") + ".txt");

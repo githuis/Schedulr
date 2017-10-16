@@ -22,7 +22,7 @@ namespace Schedulr
         {
             // We serve static files, such as index.html from the 'public' directory
             var server = new RedHttpServer(5000, "Frontend");
-            var db = new Database("WorkTimeDatabaseHashboiii");
+            var db = new Database("WorkTimeDatabaseHashboiii.db");
             var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), "localhost", secure: false);
 
             // We log to terminal here
@@ -184,7 +184,7 @@ namespace Schedulr
 
             });
 
-            server.Post("deletejob", async (req, res) =>
+            server.Post("/deletejob", async (req, res) =>
             {
                 if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
                 {
