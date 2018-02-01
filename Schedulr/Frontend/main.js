@@ -253,6 +253,8 @@ $body.on("click", "#manage-jobs-list li .fa-times", function () {
     ajaxPost("/deletejob", fd, function ()
     {
         $this.parent().remove();
+        $("#search-job option[value=" + job + "]").remove();
+        
     }, function () {
        console.log("Could not delete job: " + job);
     });
