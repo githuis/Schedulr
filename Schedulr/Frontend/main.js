@@ -31,6 +31,25 @@ function ajaxPost(url, formdata, success, fail) {
     });
 }
 
+function getWage(jobName) {
+    var data = new FormData();
+    var res = null;
+    
+    data.append("job", jobName);
+    $.ajax({
+        url: "/getwage",
+        data: data, 
+        type: "GET",
+        success: function (result)
+        {
+            res = result;
+        },
+        dataType: "string"
+    });
+    
+    return res;
+}
+
 function comparer(index) {
     return function (a, b) {
         var valA = getCellValue(a, index), valB = getCellValue(b, index);
@@ -258,6 +277,23 @@ $body.on("click", "#manage-jobs-list li .fa-times", function () {
     }, function () {
        console.log("Could not delete job: " + job);
     });
+});
+
+$body.on("click", "#manage-jobs-list li .fa-cog", function () {
+    var $this = $(this);
+    var job = $this.parent().text();
+    var fd = new FormData();
+    
+    $.magnificPopup.open({
+        items: {
+            type: 'inline',
+            src: $("#manage-specific-job-template").html()
+        }
+    });
+    
+    $("#managejobpopup .popup-title").text(job);
+    $("#managejobpopup").find("#manage-job-title").val(job);
+    $("#managejobpopup").find("#manage-job-wage").val(getWage(job));
 });
 
 $sessions.on("click", "tr", function (ev) {

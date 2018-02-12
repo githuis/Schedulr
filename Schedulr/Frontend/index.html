@@ -88,6 +88,21 @@
 
                 </div>
             </template>
+            
+            <template id="manage-specific-job-template">
+                <div id="managejobpopup" class="modal-popup">
+                    <label class="popup-title">Job Title</label>
+                    <form id="submitmanagedjobform" action="/submitmanagedjob" method="post">
+                        <label>Title</label>
+                        <input type="text" name="title" id="manage-job-title" class="u-full-width">
+                        <label>Wage</label>
+                        <input type="number" name="wage" id="manage-job-wage" class="u-full-width">
+                        
+                        <input type="submit" value="submit">
+                    </form>
+                    <br />
+                </div>
+            </template>
             <template id="newtimepopup-template">
                 <div id="newtimepopup" class="modal-popup">
                     <form id="submittimeform"  action="/submittime" method="post">

@@ -217,6 +217,41 @@ namespace Schedulr
                     await res.SendString("Error, user not logged in", status: 401);
                 }
             });
+            
+            server.Post("/submitmanagedjob", async (req, res) =>
+            {
+                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
+                {
+                    var form = await req.GetFormDataAsync();
+                    
+                    
+                }
+            });
+            
+            
+            server.Get("/getwage", async (req, res) =>
+            {
+                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
+                {
+                    var jobname = req.Queries["job"][0];
+
+                    var job = db.GetUser(sd.Username).Jobs.Find(x => x.Name == jobname);
+
+                    
+                    var s = ""; 
+                    foreach (var job1 in db.GetUser(sd.Username).Jobs)
+                    {
+                        s += job.Name + ": " + job.Hourly;
+                    }
+
+                    await res.SendString(s);
+
+                }
+                else
+                {
+                    await res.SendString("You need to be logged in", status: 401);
+                }
+            });
 
 
             server.Start();
