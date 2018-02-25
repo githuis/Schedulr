@@ -70,6 +70,15 @@ footer div {
     background-color: #EEEEEE;
 }
 
+#sessionTable tr:hover {
+    -moz-transition: background-color 100ms;
+    -ms-transition: background-color 100ms;
+    -o-transition: background-color 100ms;
+    -webkit-transition: background-color 100ms;
+    transition: background-color 100ms;
+    background-color: #EFEFEF;
+}
+
 input[type=submit] {
     float: right;
 }
@@ -80,6 +89,10 @@ input[type=submit] {
 
 .fa-cog {
     cursor: pointer;
+}
+
+.fa-dist {
+    padding-right: 2%;
 }
 
 input[type=datetime-local], input[type=time] {

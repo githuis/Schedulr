@@ -170,26 +170,26 @@ namespace Schedulr
             return false;
         }
 
-        public bool AddJob(IFormCollection form, SessionData sd)
+        public Job AddJob(IFormCollection form, SessionData sd)
         {
             if (!form.ContainsKey("name") || !form.ContainsKey("wage") || !form.ContainsKey("rules"))
-                return false;
+                return null;
 
             if (string.IsNullOrEmpty(form["name"][0]) || string.IsNullOrEmpty(form["wage"][0]) ||
                 string.IsNullOrEmpty(form["rules"][0]))
-                return false;
+                return null;
 
             string title = form["name"][0];
 
 
 
             if (!decimal.TryParse(form["wage"][0], out var wage))
-                return false;
+                return null;
 
             var rules = JsonConvert.DeserializeObject<List<Rule>>(form["rules"][0]);
 
             if (rules == null)
-                return false;
+                return null;
 
 
 
@@ -205,7 +205,7 @@ namespace Schedulr
             user.Jobs.Add(job);
             _users.Update(user);
 
-            return true;
+            return job;
         }
 
         public void UpdateUser(User u)

@@ -62,11 +62,12 @@ namespace Schedulr
 
                 var x = await req.GetFormDataAsync();
 
-                if (!db.AddJob(x, sd))
+                if (db.AddJob(x, sd) != null)
                 {
                     await res.SendString("FAIL");
                     return;
                 }
+
                 await res.SendString("OK");
 
             });
@@ -218,16 +219,27 @@ namespace Schedulr
                 }
             });
             
-            server.Post("/submitmanagedjob", async (req, res) =>
+            server.Post("/submitmanagedjobform", async (req, res) =>
             {
+                Console.WriteLine("Submitted job");
+
                 if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
                 {
                     var form = await req.GetFormDataAsync();
-                    
-                    
+                    var id = form["jobid"][0];
+                    var title = form["title"][0];
+                    var wage = decimal.Parse(form["wage"][0]);
+                    var usr = db.GetUser(sd.Username);
+
+                    var job = usr.Jobs.First(x => x.Id == id);
+                    job.Name = title;
+                    job.Hourly = wage;
+
+                    db.UpdateUser(usr);
+
+                    await res.SendString("yes");
                 }
             });
-            
             
             server.Get("/getwage", async (req, res) =>
             {
@@ -235,16 +247,11 @@ namespace Schedulr
                 {
                     var jobname = req.Queries["job"][0];
 
-                    var job = db.GetUser(sd.Username).Jobs.Find(x => x.Name == jobname);
+                    var job = db.GetUser(sd.Username).Jobs.First(x => x.Name == jobname);
 
                     
-                    var s = ""; 
-                    foreach (var job1 in db.GetUser(sd.Username).Jobs)
-                    {
-                        s += job.Name + ": " + job.Hourly;
-                    }
 
-                    await res.SendString(s);
+                    await res.SendJson(job);
 
                 }
                 else
