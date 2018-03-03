@@ -138,10 +138,11 @@
             <template id="profilepopup-template">
                 <div class="modal-popup">
                     <label for="changePwdForm">Change password</label>
-                        <form id="changePwdForm">
+                    <p id="changePwd-message"></p>
+                        <form id="changePwdForm" action="/changepass" method="post">
                             <input class="u-full-width" type="password" name="oldPwd" required="required" placeholder="Current password" pattern=".{4,}">
                             <input class="u-full-width" type="password" name="newPwd" required="required" placeholder="New password" pattern=".{4,}">
-                            <input class="u-full-width" type="password" required="required" placeholder="Repeat new password">
+                            <input class="u-full-width" type="password" name="confPwd" required="required" placeholder="Repeat new password" pattern=".{4,}">
                             <input class="u-full-width" type="submit" value="Change password">
                         </form>
                     <button class="u-full-width" id="addJob">Add new job</button>
@@ -216,6 +217,12 @@
                         </form>
                             <input form="addJobForm" class="u-full-width" type="submit" value="Save new job">
                         </div>
+                </div>
+            </template>
+            <template id="changed-password-template">
+                <div class="modal-popup">
+                    <label>Change password</label>
+                    <p id="changed-pass-content">Successfully changed password</p>
                 </div>
             </template>
         </span>

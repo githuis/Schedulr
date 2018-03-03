@@ -218,11 +218,48 @@ namespace Schedulr
                     await res.SendString("Error, user not logged in", status: 401);
                 }
             });
+
+            server.Post("/changepass", async (req, res) =>
+            {
+                Console.Write("Pass change request:  ");
+                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
+                {
+                    var form = await req.GetFormDataAsync();
+
+                    if (!(form.ContainsKey("oldPwd") && form.ContainsKey("newPwd") && form.ContainsKey("confPwd")))
+                    {
+                        Console.WriteLine("Not all keys contained");
+                        await res.SendString("Error, not all fields filled out", status: 400);
+                        return;
+                    }
+
+                    var oldP = form["oldPwd"][0];
+                    var newP = form["newPwd"][0];
+                    var confP = form["confPwd"][0];
+
+                    if (!db.Login(sd.Username, oldP))
+                    {
+                        Console.WriteLine("Wrong old password");
+                        await res.SendString("Error, wrong pass", status:400);
+                        return;
+                    }
+                    else if (newP != confP)
+                    {
+                        Console.WriteLine("New passwords don't match!");
+                        await res.SendString("Error, passwords don't match", status: 400);
+                        return;
+                    }
+
+                    var u = db.GetUser(sd.Username);
+                    u.Password = BCrypt.Net.BCrypt.HashPassword(newP);
+                    db.UpdateUser(u);
+
+                    await res.SendString("Success");
+                }
+            });
             
             server.Post("/submitmanagedjobform", async (req, res) =>
             {
-                Console.WriteLine("Submitted job");
-
                 if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
                 {
                     var form = await req.GetFormDataAsync();

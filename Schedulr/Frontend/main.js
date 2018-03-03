@@ -31,6 +31,7 @@ function ajaxPost(url, formdata, success, fail) {
             401: function (data) {
                 window.location.replace("/login");
             },
+            400: fail,
             404: fail
         }
     });
@@ -301,6 +302,34 @@ $body.on("submit", "#submitmanagedjobform", ev => {
     manageJob = "";
 });
 
+$body.on("submit", "#changePwdForm", ev => {
+    ev.preventDefault();
+    let form = new FormData();
+    let temp = $("#changePwdForm");
+
+    $("#changePwd-message").text('heyu'); //Empty error messages
+
+    form.append("oldPwd", temp.find('input[name="oldPwd"]').val());
+    form.append("newPwd", temp.find('input[name="newPwd"]').val());
+    form.append("confPwd", temp.find('input[name="confPwd"]').val());
+
+    ajaxPost("/changepass", form, function(){
+        $.magnificPopup.open({
+            items: {
+                type: 'inline',
+                src: $("#changed-password-template").html()
+            }
+        });
+    }, function(){
+        let msgEle = $("#changePwd-message");
+        msgEle.text("Error man");
+        console.log(ev);
+        //.innerHTML = "<p> Error!</p>";
+        //console.log("Faioled to change password");
+    });
+
+});
+
 $body.on("click", "#manage-jobs-list li .fa-times", function () {
     let $this = $(this);
     let job = $this.parent().text();
@@ -309,7 +338,7 @@ $body.on("click", "#manage-jobs-list li .fa-times", function () {
 
     ajaxPost("/deletejob", fd, function () {
         $this.parent().remove();
-        $("#search-job option[value=" + job + "]").remove();
+        $("#search-job").find("option[value=" + job + "]").remove();
 
     }, function () {
         console.log("Could not delete job: " + job);
@@ -378,6 +407,8 @@ $('.sortable').click(function () {
         table.append(rows[i])
     }
 });
+
+
 
 $body.on("click", "#day-preset-all", function () {
     $("#new-rule-days-checkbox input").prop("checked", true);
