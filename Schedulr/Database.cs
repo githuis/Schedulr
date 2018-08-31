@@ -6,7 +6,6 @@ using LiteDB;
 using System.Linq;
 using BCrypt;
 using Microsoft.AspNetCore.Http;
-using RedHttpServerCore.Plugins.Interfaces;
 using Newtonsoft.Json;
 
 namespace Schedulr

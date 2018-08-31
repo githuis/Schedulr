@@ -174,10 +174,10 @@ $body.on("submit", "#addJobForm", function (ev) {
         arr.push(JSON.parse($(this).attr("data-obj")))
     });
     form.append("rules", JSON.stringify(arr));
-    ajaxPost("/submitnewjob", form, function (sess) {
+    ajaxPost("/submitnewjob", form, function () {
         jobs.push(job);
-        $.magnificPopup.close();
         $("#search-job").append("<option value='" + job + "'>" + job + "</option>");
+        $.magnificPopup.close();
     });
 
 

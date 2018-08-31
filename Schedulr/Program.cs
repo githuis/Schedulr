@@ -3,32 +3,37 @@ using System.Data;
 using System.Globalization;
 using System.IO;
 using Microsoft.AspNetCore.Http;
-using RedHttpServerCore;
-using RedHttpServerCore.Plugins;
-using RedHttpServerCore.Plugins.Interfaces;
-using RedHttpServerCore.Response;
 //using StockManager;
 using Rosenbjerg.SessionManager;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Red;
+using Red.CookieSessions;
 
 namespace Schedulr
-{
+{   
     class Program
     {
 
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             // We serve static files, such as index.html from the 'public' directory
             var server = new RedHttpServer(5000, "Frontend");
             var db = new Database("WorkTimeDatabaseHashboiii.db");
-            var sessionManager = new SessionManager<SessionData>(new TimeSpan(12, 0, 0), secure: false);
+            server.Use(new CookieSessions<SessionData>(new CookieSessionSettings(TimeSpan.FromDays(14))
+            {
+                Secure = false
+            }));
 
-            // We log to terminal here
-            var logger = new TerminalLogging();
-            server.Plugins.Register<ILogging, TerminalLogging>(logger);
-
+            async Task Auth(Request req, Response res)
+            {
+                if (req.GetSession<SessionData>() == null)
+                {
+                    await res.SendStatus(HttpStatusCode.Unauthorized);
+                }
+            }
+            
             server.Get("/register", async (req, res) =>
             {
                 await res.SendFile("Frontend/newuser.html");
@@ -43,7 +48,7 @@ namespace Schedulr
 
                 if (!db.Register(username, pass1, pass2))
                 {
-                    await res.SendString("Oh boy, somebody already used this key!", status: 400);
+                    await res.SendString("Oh boy, somebody already used this key!", status: HttpStatusCode.BadRequest);
                 }
                 else
                 {
@@ -52,15 +57,10 @@ namespace Schedulr
 
             });
 
-            server.Post("/submitnewjob", async (req, res) =>
+            server.Post("/submitnewjob", Auth, async (req, res) =>
             {
-                if (!sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
-                {
-                    await res.SendString("FAIL");
-                    return;
-                }
-
                 var x = await req.GetFormDataAsync();
+                var sd = req.GetSession<SessionData>().Data;
 
                 if (db.AddJob(x, sd) != null)
                 {
@@ -72,28 +72,20 @@ namespace Schedulr
 
             });
 
-            server.Get("/user", async (req, res) =>
+            server.Get("/user", Auth, async (req, res) =>
             {
-                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
-                {
-                    await res.SendJson(db.GetUser(sd.Username));
-                }
-                else
-                {
-                    await res.SendString("Please login first", status: 401);
-                }
+                var sd = req.GetSession<SessionData>().Data;
+
+                await res.SendJson(db.GetUser(sd.Username));
             });
 
-            server.Get("/sessions", async (req, res) =>
+            server.Get("/sessions", Auth, async (req, res) =>
             {
-                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
-                {
-                    var q = req.Queries;
-                    var a = db.GetUsersSessions(sd.Username, q);
-                    await res.SendJson(a);
-                    return;
-                }
-                await res.SendString("\"[]\"", contentType: "text/json");
+                var sd = req.GetSession<SessionData>().Data;
+
+                var q = req.Queries;
+                var a = db.GetUsersSessions(sd.Username, q);
+                await res.SendJson(a);
             });
 
             server.Post("/login", async (req, res) =>
@@ -105,204 +97,175 @@ namespace Schedulr
                     var pass = form["password"][0];
                     if (db.Login(username, pass))
                     {
-                        var cookie = sessionManager.OpenSession(new SessionData(form["username"][0]));
-                        res.AddHeader("Set-Cookie", cookie);
-                        await res.SendString("Sucess!");
-                        return;
+                        req.OpenSession(new SessionData(username));
+                        await res.SendStatus(HttpStatusCode.OK);
                     }
                 }
                 // Just to annoy people who want to try many passwords fast
                 await Task.Delay(350);
-                await res.SendString("No user found with that username or password, sorry!", status: 401);
+                await res.SendString("No user found with that username or password, sorry!", status: HttpStatusCode.Unauthorized);
             });
 
-            server.Post("/submittime", async (req, res) =>
+            server.Post("/submittime", Auth, async (req, res) =>
             {
-                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
+                var sd = req.GetSession<SessionData>().Data;
+
+                var form = await req.GetFormDataAsync();
+
+                //TODO Better input validation please
+                if (!ValidateAddSessionForm(form, out var job, out var start, out var end))
                 {
-                    var form = await req.GetFormDataAsync();
-
-                    //TODO Better input validation please
-                    if (!ValidateAddSessionForm(form, out var job, out var start, out var end))
-                    {
-                        await res.SendString("Failed", status: 400);
-                        return;
-                    }
-                    var desc = "";
-                    if (form.ContainsKey("desc"))
-                        desc = form["desc"][0];
-
-                    User u = db.GetUser(sd.Username);
-                    Job j = u.Jobs.FirstOrDefault(b => b.Name == job);
-                    if (j == null)
-                    {
-                        await res.SendString("Failed", status: 400);
-                        return;
-                    }
-
-                    var session = new Session
-                    {
-                        Id = Guid.NewGuid().ToString("N").Substring(8),
-                        JobId = j.Id,
-                        Description = desc,
-                        Job = job,
-                        Username = sd.Username,
-                        StartDate = start,
-                        EndDate = end,
-                    };
-                    session.Earned = Database.ProcessSession(session, j);
-                    
-
-                    var sess = db.AddSession(session, j);
-
-                    await res.SendJson(sess);
+                    await res.SendString("Failed", status: HttpStatusCode.BadRequest);
+                    return;
                 }
-                else
+                var desc = "";
+                if (form.ContainsKey("desc"))
+                    desc = form["desc"][0];
+
+                User u = db.GetUser(sd.Username);
+                Job j = u.Jobs.FirstOrDefault(b => b.Name == job);
+                if (j == null)
                 {
-                    await res.SendString("/login", status: 403);
+                    await res.SendString("Failed", status: HttpStatusCode.BadRequest);
+                    return;
                 }
+
+                var session = new Session
+                {
+                    Id = Guid.NewGuid().ToString("N").Substring(8),
+                    JobId = j.Id,
+                    Description = desc,
+                    Job = job,
+                    Username = sd.Username,
+                    StartDate = start,
+                    EndDate = end,
+                };
+                session.Earned = Database.ProcessSession(session, j);
+                
+
+                var sess = db.AddSession(session, j);
+
+                await res.SendJson(sess);
             });
 
-            server.Post("/deletesession", async (req, res) =>
+            server.Post("/deletesession", Auth, async (req, res) =>
             {
-                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
-                {
-                    var form = await req.GetFormDataAsync();
+                var sd = req.GetSession<SessionData>().Data;
+
+                var form = await req.GetFormDataAsync();
 
 
-                    if (form.ContainsKey("deleteTarget") 
+                if (form.ContainsKey("deleteTarget") 
                     && db.DeleteSession(form["deleteTarget"], sd.Username))
-                    {
-                        await res.SendString("Sucess");
-                        return;
-                    }
-
-                    await res.SendString("Error", status: 403);
-                }
-                else
                 {
-                    await res.SendString("Error, user not logged in", status: 401);
+                    await res.SendStatus(HttpStatusCode.OK);
                 }
 
             });
 
-            server.Post("/deletejob", async (req, res) =>
+            server.Post("/deletejob", Auth, async (req, res) =>
             {
-                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
+                var sd = req.GetSession<SessionData>().Data;
+
+                
+                var form = await req.GetFormDataAsync();
+                if (CheckFormContains(form, "job"))
                 {
-                    var form = await req.GetFormDataAsync();
-                    if (CheckFormContains(form, "job"))
+                    var user = db.GetUser(sd.Username);
+                    var job = user.Jobs.FirstOrDefault(x => x.Name == form["job"][0]);
+
+                    if (job != null)
                     {
-                        var user = db.GetUser(sd.Username);
-                        var job = user.Jobs.FirstOrDefault(x => x.Name == form["job"][0]);
+                        user.Jobs.Remove(job);
+                        db.UpdateUser(user);
 
-                        if (job != null)
-                        {
-                            user.Jobs.Remove(job);
-                            db.UpdateUser(user);
-
-                            await res.SendString("Sucess");
-                        }
-                        else
-                        {
-                            await res.SendString("Error", status: (int) HttpStatusCode.BadRequest);
-                        }
+                        await res.SendString("Sucess");
                     }
                     else
                     {
-                        await res.SendString("Error in form", status: 400);
+                        await res.SendString("Error", status: HttpStatusCode.BadRequest);
                     }
                 }
                 else
                 {
-                    await res.SendString("Error, user not logged in", status: 401);
+                    await res.SendString("Error in form", status: HttpStatusCode.BadRequest);
                 }
+                
             });
 
-            server.Post("/changepass", async (req, res) =>
+            server.Post("/changepass", Auth, async (req, res) =>
             {
+                
+                var sd = req.GetSession<SessionData>().Data;
+
                 Console.Write("Pass change request:  ");
-                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
+                
+                var form = await req.GetFormDataAsync();
+
+                if (!(form.ContainsKey("oldPwd") && form.ContainsKey("newPwd") && form.ContainsKey("confPwd")))
                 {
-                    var form = await req.GetFormDataAsync();
-
-                    if (!(form.ContainsKey("oldPwd") && form.ContainsKey("newPwd") && form.ContainsKey("confPwd")))
-                    {
-                        Console.WriteLine("Not all keys contained");
-                        await res.SendString("Error, not all fields filled out", status: 400);
-                        return;
-                    }
-
-                    var oldP = form["oldPwd"][0];
-                    var newP = form["newPwd"][0];
-                    var confP = form["confPwd"][0];
-
-                    if (!db.Login(sd.Username, oldP))
-                    {
-                        Console.WriteLine("Wrong old password");
-                        await res.SendString("Error, wrong pass", status:400);
-                        return;
-                    }
-                    else if (newP != confP)
-                    {
-                        Console.WriteLine("New passwords don't match!");
-                        await res.SendString("Error, passwords don't match", status: 400);
-                        return;
-                    }
-
-                    var u = db.GetUser(sd.Username);
-                    u.Password = BCrypt.Net.BCrypt.HashPassword(newP);
-                    db.UpdateUser(u);
-
-                    await res.SendString("Success");
+                    Console.WriteLine("Not all keys contained");
+                    await res.SendString("Error, not all fields filled out", status: HttpStatusCode.BadRequest);
+                    return;
                 }
+
+                var oldP = form["oldPwd"][0];
+                var newP = form["newPwd"][0];
+                var confP = form["confPwd"][0];
+
+                if (!db.Login(sd.Username, oldP))
+                {
+                    Console.WriteLine("Wrong old password");
+                    await res.SendString("Error, wrong pass", status: HttpStatusCode.BadRequest);
+                }
+                else if (newP != confP)
+                {
+                    Console.WriteLine("New passwords don't match!");
+                    await res.SendString("Error, passwords don't match", status: HttpStatusCode.BadRequest);
+                }
+
+                var u = db.GetUser(sd.Username);
+                u.Password = BCrypt.Net.BCrypt.HashPassword(newP);
+                db.UpdateUser(u);
+
+                await res.SendStatus(HttpStatusCode.OK);
+
             });
             
-            server.Post("/submitmanagedjobform", async (req, res) =>
+            server.Post("/submitmanagedjobform", Auth, async (req, res) =>
             {
-                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
-                {
-                    var form = await req.GetFormDataAsync();
-                    var id = form["jobid"][0];
-                    var title = form["title"][0];
-                    var wage = decimal.Parse(form["wage"][0]);
-                    var usr = db.GetUser(sd.Username);
+                var sd = req.GetSession<SessionData>().Data;
 
-                    var job = usr.Jobs.First(x => x.Id == id);
-                    job.Name = title;
-                    job.Hourly = wage;
+                var form = await req.GetFormDataAsync();
+                var id = form["jobid"][0];
+                var title = form["title"][0];
+                var wage = decimal.Parse(form["wage"][0]);
+                var usr = db.GetUser(sd.Username);
 
-                    db.UpdateUser(usr);
+                var job = usr.Jobs.First(x => x.Id == id);
+                job.Name = title;
+                job.Hourly = wage;
 
-                    await res.SendString("yes");
-                }
+                db.UpdateUser(usr);
+
+                await res.SendStatus(HttpStatusCode.OK);
             });
             
-            server.Get("/getwage", async (req, res) =>
+            server.Get("/getwage", Auth, async (req, res) =>
             {
-                if (sessionManager.TryAuthenticateToken(req.Cookies["token"], out SessionData sd))
-                {
-                    var jobname = req.Queries["job"][0];
+                var sd = req.GetSession<SessionData>().Data;
 
-                    var job = db.GetUser(sd.Username).Jobs.First(x => x.Name == jobname);
+                var jobname = req.Queries["job"][0];
+
+                var job = db.GetUser(sd.Username).Jobs.First(x => x.Name == jobname);
 
                     
 
-                    await res.SendJson(job);
-
-                }
-                else
-                {
-                    await res.SendString("You need to be logged in", status: 401);
-                }
+                await res.SendJson(job);
             });
 
 
-            server.Start();
-            while (true)
-            {
-                Console.ReadLine();
-            }
+            await server.RunAsync();
         }
 
         private static bool ValidateAddSessionForm(IFormCollection form, out string job, out DateTime startTime, out DateTime endTime)
